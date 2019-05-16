@@ -116,7 +116,7 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <EditText
-                        android:id="@+id/editTextLoginEmail"
+                        android:id="@+id/editTextRegisterEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="10dp"
@@ -128,13 +128,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
-                        android:text="Username"
+                        android:text="Name"
                         android:fontFamily="monospace"
                         android:textColor="@color/colorRed"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <EditText
-                        android:id="@+id/editTextLoginUsername"
+                        android:id="@+id/editTextRegisterUsername"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="10dp"
@@ -152,12 +152,12 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <android.support.design.widget.TextInputLayout
-                        android:id="@+id/textInputLoginPassword"
+                        android:id="@+id/textInputRegisterPassword"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         app:passwordToggleEnabled="true">
                         <EditText
-                            android:id="@+id/editTextLoginPassword"
+                            android:id="@+id/editTextRegisterPassword"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="10dp"
@@ -176,12 +176,12 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <android.support.design.widget.TextInputLayout
-                        android:id="@+id/textInputLoginRePassword"
+                        android:id="@+id/textInputRegisterRePassword"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         app:passwordToggleEnabled="true">
                         <EditText
-                            android:id="@+id/editTextLoginRePassword"
+                            android:id="@+id/editTextRegisterRePassword"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="10dp"
@@ -221,7 +221,7 @@
 
     <!-- Progress Bar -->
     <ProgressBar
-        android:id="@+id/progressBarLogin"
+        android:id="@+id/progressBarRegister"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/scrollViewLogin"

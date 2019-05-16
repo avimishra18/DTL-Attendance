@@ -238,7 +238,7 @@
                     android:background="@drawable/button_ui_alternative"
                     android:paddingLeft="-10dp"
                     android:paddingRight="-10dp"
-                    android:text="FORGOT PASSSWORD"
+                    android:text="FORGOT PASSSWORD?"
                     android:fontFamily="monospace"
                     android:textColor="@color/colorRed" />
 
