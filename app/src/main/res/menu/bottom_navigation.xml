@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigationHistory"
+        android:icon="@drawable/historyselector"
+        android:title="History"/>
+
+    <item
+        android:id="@+id/navigationHome"
+        android:icon="@drawable/homeselector"
+        android:title="Home"/>
+
+    <item
+        android:id="@+id/navigationLeaderBoard"
+        android:icon="@drawable/leaderboardselector"
+        android:title="Leaderboard"/>
+</menu>

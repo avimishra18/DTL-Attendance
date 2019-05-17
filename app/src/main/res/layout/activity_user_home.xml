@@ -10,7 +10,21 @@
         android:id="@+id/buttonUserLogOut"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_alignParentStart="true"
         android:text="Log Out"/>
+
+    <FrameLayout
+        android:id="@+id/frameLayoutUser"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottomNavigationUser"/>
+
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/bottomNavigationUser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:itemBackground="@color/colorWhite"
+        app:menu="@menu/bottom_navigation"/>
 
 </RelativeLayout>

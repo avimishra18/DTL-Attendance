@@ -198,14 +198,18 @@
                         android:textColor="@color/colorWhite" />
                 </RelativeLayout>
 
-                <!-- Progress Bar -->
-                <ProgressBar
+                <!-- Progress Bar Custom -->
+                <com.github.ybq.android.spinkit.SpinKitView
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/progressBarLogin"
+                    style="@style/SpinKitView.ThreeBounce"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/cardviewLogin"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:layout_below="@id/cardviewLogin"
                     android:layout_centerHorizontal="true"
-                    android:visibility="gone"/>
+                    app:SpinKit_Color="@color/colorRed" />
 
                 <!-- Switch To Register Activity -->
                 <RelativeLayout

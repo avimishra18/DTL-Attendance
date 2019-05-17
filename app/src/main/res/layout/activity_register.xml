@@ -220,13 +220,17 @@
     </RelativeLayout>
 
     <!-- Progress Bar -->
-    <ProgressBar
+    <com.github.ybq.android.spinkit.SpinKitView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/progressBarRegister"
+        style="@style/SpinKitView.ThreeBounce"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
         android:layout_below="@+id/scrollViewLogin"
         android:layout_centerHorizontal="true"
-        android:visibility="gone"/>
+        app:SpinKit_Color="@color/colorRed" />
 
     <!-- Switch To Log In -->
     <Button
