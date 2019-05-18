@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -145,8 +146,40 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
 
-                    Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                    //Sends the user to userhome
+                    //Login is already successful, now we check whether the operator is USER/ADMIN
+
+                    //Redirecting the admin to the admin or the user part
+                    //Retrieving the custom files from the FireBase Database
+                    FirebaseDatabase.getInstance().getReference().addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            //Data Snapshot takes the snapshot of the whole database & we iterate and get the one which we want
+                            for(DataSnapshot ds: dataSnapshot.getChildren()){
+                                User currentUser = new User();
+                                //Getting all the data from FireBase Database
+                                currentUser.setEmail(ds.child(mAuth.getUid()).getValue(User.class).getEmail());
+                                currentUser.setUsername(ds.child(mAuth.getUid()).getValue(User.class).getUsername());
+                                currentUser.setAdmin(ds.child(mAuth.getUid()).getValue(User.class).getAdmin());
+
+                                if(currentUser.getAdmin().equals("0")){
+                                   Intent userIntent = new Intent(LoginActivity.this,UserHomeActivity.class);
+                                   startActivity(userIntent);
+                                   finish();
+                                }
+                                else if(currentUser.getAdmin().equals("1")){
+                                    Intent adminIntent = new Intent(LoginActivity.this,AdminHomeActivity.class);
+                                    startActivity(adminIntent);
+                                    finish();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            //Toast if Login is unsuccessful
+                            Toast.makeText(LoginActivity.this,databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     Intent intent = new Intent(LoginActivity.this,UserHomeActivity.class);
                     startActivity(intent);
                     finish();
