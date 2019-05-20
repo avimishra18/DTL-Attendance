@@ -1,8 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="@color/colorYellow">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleX="-1"
+        android:alpha="0.85">
+        <!-- Header Toolbar of The App -->
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/bgHeaderHomeFragment"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:background="@drawable/header_login"
+            android:scaleX="-1"
+            android:elevation="5dp" />
+        <!-- Various Circle UI in the program -->
+        <ImageView
+            android:id="@+id/HomeFragmentcircle1"
+            android:layout_width="134dp"
+            android:layout_height="134dp"
+            android:layout_below="@+id/bgHeaderHomeFragment"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="90dp"
+            android:alpha="0.8"
+            android:layout_marginRight="-100dp"
+            android:src="@drawable/circletransparant" />
+        <ImageView
+            android:id="@+id/HomeFragmentcircle2"
+            android:layout_width="134dp"
+            android:layout_height="134dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="-100dp"
+            android:layout_marginBottom="50dp"
+            android:src="@drawable/circletransparant" />
+        <ImageView
+            android:id="@+id/HomeFragmentcircle3"
+            android:layout_width="182dp"
+            android:layout_height="182dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="-80dp"
+            android:layout_marginBottom="-30dp"
+            android:src="@drawable/circle" />
+        <ImageView
+            android:id="@+id/HomeFragmentcircle4"
+            android:layout_width="134dp"
+            android:layout_height="134dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="-50dp"
+            android:layout_marginBottom="-50dp"
+            android:layout_toLeftOf="@+id/HomeFragmentcircle3"
+            android:src="@drawable/circletransparant" />
+    </RelativeLayout>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/cardViewSession"
+        android:layout_width="match_parent"
+        android:layout_marginTop="35dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="20dp"
+        android:layout_height="250dp">
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/sessionChart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </android.support.v7.widget.CardView>
 
 
+    <ListView
+        android:id="@+id/listViewSession"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/cardViewSession"
+        android:divider="@null"
+        android:layout_margin="10dp"/>
 
 </RelativeLayout>

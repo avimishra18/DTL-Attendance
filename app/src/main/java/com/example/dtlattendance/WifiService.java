@@ -1,13 +1,28 @@
 package com.example.dtlattendance;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -19,54 +34,117 @@ public class WifiService extends Service {
 
     //Declarations
     private long count=0;
-    private String startTime, endTime;
+    private String startTime, endTime,sessionID;
+    private boolean connected=true;
 
-    //When the service gets created
-    @Override
-    public void onCreate() {
+    //FireBase
+    DatabaseReference databaseReferenceSession,databaseReferenceUser;
 
-        //Shared Preference
-        SharedPreferences pref = getSharedPreferences("time",MODE_PRIVATE);
-        SharedPreferences.Editor editor = pref.edit();
+    //Broadcast Receiver which detects change in WiFi State
+    private BroadcastReceiver wifiStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int wifiStateExtra = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,WifiManager.WIFI_STATE_UNKNOWN);
 
-        //Main Code of the App
-        startTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-        editor.putString("startTime",startTime);
-        editor.apply();
+            switch (wifiStateExtra){
+                case WifiManager.WIFI_STATE_ENABLED:
+                    connected=true;
+                    break;
+                case WifiManager.WIFI_STATE_DISABLED:
+                    connected=false;
+                    //Shared Preference to get other details
+                    SharedPreferences pref = getSharedPreferences("User",Context.MODE_PRIVATE);
+                    String storedUsername =     pref.getString("username",null);
+                    String storedemail =     pref.getString("email",null);
+                    String storedAdmin =  pref.getString("admin",null);
 
-        super.onCreate();
-    }
+                    //Marking the User as offline
+                    User activeUser = new User(storedemail,storedUsername,storedAdmin,"0");
+                    databaseReferenceUser.setValue(activeUser);
+                    break;
+            }
+        }
+    };
 
-    //When the service gets destroyed
     @Override
     public void onDestroy() {
         endTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
 
-        //Shared Preference End Time
-        SharedPreferences pref = getSharedPreferences("time",MODE_PRIVATE);
-        SharedPreferences.Editor editor = pref.edit();
+        //FireBase Database
+        databaseReferenceSession = FirebaseDatabase.getInstance()
+                .getReference("Sessions")
+                .child(FirebaseAuth.getInstance().getUid());
 
-        editor.putString("endTime",endTime);
-        editor.apply();
-        //String storedStartTime = pref.getString("startTime",null);
+        //Code when Wi-Fi gets disconnected
+
+        //Final Notification Generator
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+
+        Notification finalNotification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
+                .setContentTitle("DTL Attendance")
+                .setContentText("Last Session time =" + Long.toString(count))
+                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
+                .build();
+        notificationManagerCompat.notify(1,finalNotification);
+        try {
+            unregisterReceiver(wifiStateReceiver);
+        } catch(IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        //FireBase
+        AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Double.toString(count));
+        databaseReferenceSession.child(sessionID).setValue(attendanceSession);
+        sessionID=null;
+
+        //Shared Preference to get other details
+        SharedPreferences pref = getSharedPreferences("User",MODE_PRIVATE);
+        String storedUsername =     pref.getString("username",null);
+        String storedemail =     pref.getString("email",null);
+        String storedAdmin =  pref.getString("admin",null);
+
+        //Marking the User as offline
+        User activeUser = new User(storedemail,storedUsername,storedAdmin,"0");
+        databaseReferenceUser.setValue(activeUser);
+
+        stopSelf();
         super.onDestroy();
     }
 
-
-    //On start of activity
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final String input = intent.getStringExtra("inputExtra");
 
-        //You can't run this service on the main thread.
+        //We shouldn't run a service on the main thread.
         new Thread(new Runnable() {
             @Override
             public void run() {
 
-                count++;
+                IntentFilter intentFilter = new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
+                registerReceiver(wifiStateReceiver,intentFilter);
 
-                //While name of WI-FI is the same.
-                while (true){
+                //FireBase Session
+                databaseReferenceSession = FirebaseDatabase.getInstance()
+                        .getReference("Sessions")
+                        .child(FirebaseAuth.getInstance().getUid());
+
+                //Generation of UID
+                sessionID = databaseReferenceSession.push().getKey();
+
+                //FireBase to show if user is online
+                databaseReferenceUser = FirebaseDatabase.getInstance()
+                        .getReference("Users")
+                        .child(FirebaseAuth.getInstance().getUid());
+
+                //Shared Preference to get other details
+                SharedPreferences pref = getSharedPreferences("User",MODE_PRIVATE);
+                String storedUsername =     pref.getString("username",null);
+                String storedemail =     pref.getString("email",null);
+                String storedAdmin =  pref.getString("admin",null);
+
+
+
+                //While our broadcast receiver is true
+                while (connected){
 
                     try {
                         count+=1;
@@ -86,13 +164,18 @@ public class WifiService extends Service {
 
                         startForeground(1,notification);
 
-                        //Updating the endTime regularly if in case OnDestroy is not called
+                        //Updating the endTime regularly if in case OnDestroy not called.
                         endTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-                        //Shared Preference End Time
-                        SharedPreferences pref = getSharedPreferences("time",MODE_PRIVATE);
-                        SharedPreferences.Editor editor = pref.edit();
-                        editor.putString("endTime",endTime);
-                        editor.apply();
+
+                        //FireBase Update (End-Time & Total Time) Only
+                        AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Long.toString(count));
+                        if(sessionID != null) {
+                            //Updating the session
+                            databaseReferenceSession.child(sessionID).setValue(attendanceSession);
+                            //Marking the User as online
+                            User activeUser = new User(storedemail,storedUsername,storedAdmin,"1");
+                            databaseReferenceUser.setValue(activeUser);
+                        }
 
                         //Thread sleeps for 1 second so that is equal to 1s of actual time spent
                         Thread.sleep(1000);
@@ -102,12 +185,45 @@ public class WifiService extends Service {
                     }
                 }
 
+                //Code when Wi-Fi gets disconnected (i.e. connection=false)
+                //Notification Manager
+                NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+
+                Notification finalNotification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
+                        .setContentTitle("DTL Attendance")
+                        .setContentText("Last Session time =" + Long.toString(count)+"\nIn Time:"+startTime)
+                        .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                        .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
+                        .build();
+                notificationManagerCompat.notify(1,finalNotification);
+                try {
+                    unregisterReceiver(wifiStateReceiver);
+                } catch(IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+
+                //FireBase
+                AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Long.toString(count));
+                if(sessionID != null)
+                    databaseReferenceSession.child(sessionID).setValue(attendanceSession);
+                sessionID=null;
+
+                //Marking the User as offline
+                User activeUser = new User(storedemail,storedUsername,storedAdmin,"0");
+                databaseReferenceUser.setValue(activeUser);
+
+                //Stop Self
+                stopSelf();
             }
         }).start();
-
-        //if work is done
-        //stopSelf();
         return START_REDELIVER_INTENT;
+    }
+
+    //When the service gets created
+    @Override
+    public void onCreate() {
+        startTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
+        super.onCreate();
     }
 
     @Nullable

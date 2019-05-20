@@ -1,6 +1,7 @@
 package com.example.dtlattendance;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -67,7 +68,7 @@ public class LoginActivity extends AppCompatActivity {
         //Log in Button
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
-                public void onClick(View v) {
+            public void onClick(View v) {
                 final String email = editTextLoginEmail.getText().toString();
                 final String password = editTextLoginPassword.getText().toString();
                 if(email.isEmpty())
@@ -129,10 +130,24 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         //Check if user is signed in (non-null) and update UI accordingly.
         if (mAuth.getCurrentUser() != null) {
+
             //Sends the user to userhome
-            Intent intent = new Intent(LoginActivity.this,UserHomeActivity.class);
-            startActivity(intent);
-            finish();
+            SharedPreferences pref = getSharedPreferences("User",MODE_PRIVATE);
+            //String storedUsername =     pref.getString("username",null);
+            //String storedemail =     pref.getString("email",null);
+            String storedAdmin =  pref.getString("admin",null);
+
+            if(storedAdmin != null)
+                if(storedAdmin.equals("0")){
+                    Intent userIntent = new Intent(LoginActivity.this,UserHomeActivity.class);
+                    startActivity(userIntent);
+                    finish();
+                }
+                else if(storedAdmin.equals("1")){
+                    Intent adminIntent = new Intent(LoginActivity.this,AdminHomeActivity.class);
+                    startActivity(adminIntent);
+                    finish();
+                }
         }
     }
 
@@ -154,22 +169,33 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             //Data Snapshot takes the snapshot of the whole database & we iterate and get the one which we want
-                            for(DataSnapshot ds: dataSnapshot.getChildren()){
-                                User currentUser = new User();
-                                //Getting all the data from FireBase Database
-                                currentUser.setEmail(ds.child(mAuth.getUid()).getValue(User.class).getEmail());
-                                currentUser.setUsername(ds.child(mAuth.getUid()).getValue(User.class).getUsername());
-                                currentUser.setAdmin(ds.child(mAuth.getUid()).getValue(User.class).getAdmin());
+                            for(DataSnapshot ds: dataSnapshot.getChildren()) {
 
-                                if(currentUser.getAdmin().equals("0")){
-                                   Intent userIntent = new Intent(LoginActivity.this,UserHomeActivity.class);
-                                   startActivity(userIntent);
-                                   finish();
-                                }
-                                else if(currentUser.getAdmin().equals("1")){
-                                    Intent adminIntent = new Intent(LoginActivity.this,AdminHomeActivity.class);
-                                    startActivity(adminIntent);
-                                    finish();
+                                //Shared Preference
+                                SharedPreferences pref = getSharedPreferences("User", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = pref.edit();
+                                if (mAuth.getUid() != null) {
+
+                                    try {
+                                        editor.putString("email", ds.child(mAuth.getUid()).getValue(User.class).getEmail());
+                                        editor.putString("username", ds.child(mAuth.getUid()).getValue(User.class).getUsername());
+                                        String admin = ds.child(mAuth.getUid()).getValue(User.class).getAdmin();
+                                        editor.putString("admin", admin);
+                                        editor.apply();
+
+                                        if (admin != null)
+                                            if (admin.equals("0")) {
+                                                Intent userIntent = new Intent(LoginActivity.this, UserHomeActivity.class);
+                                                startActivity(userIntent);
+                                                finish();
+                                            } else if (admin.equals("1")) {
+                                                Intent adminIntent = new Intent(LoginActivity.this, AdminHomeActivity.class);
+                                                startActivity(adminIntent);
+                                                finish();
+                                            }
+                                    }catch (Exception e){
+                                        Toast.makeText(LoginActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             }
                         }
@@ -180,9 +206,6 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(LoginActivity.this,databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
-                    Intent intent = new Intent(LoginActivity.this,UserHomeActivity.class);
-                    startActivity(intent);
-                    finish();
                 }
                 else{
                     Toast.makeText(LoginActivity.this,task.getException().getMessage(), Toast.LENGTH_SHORT).show();
