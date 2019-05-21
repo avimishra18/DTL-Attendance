@@ -62,7 +62,8 @@
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginBottom="20dp"
-        android:layout_height="250dp">
+        android:layout_height="250dp"
+        android:visibility="gone">
 
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/sessionChart"
@@ -78,6 +79,8 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/cardViewSession"
         android:divider="@null"
-        android:layout_margin="10dp"/>
+        android:stackFromBottom="true"
+        android:transcriptMode="normal"
+        android:layout_margin="10dp" />
 
 </RelativeLayout>

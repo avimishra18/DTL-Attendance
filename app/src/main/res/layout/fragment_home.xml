@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- Relative Layout for the BG -->
     <RelativeLayout
@@ -53,7 +55,50 @@
             android:layout_marginBottom="-50dp"
             android:layout_toLeftOf="@+id/HomeFragmentcircle3"
             android:src="@drawable/circletransparant" />
+
     </RelativeLayout>
+
+    <!--
+    <com.getbase.floatingactionbutton.FloatingActionsMenu
+        android:id="@+id/floatingActionMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fab_addButtonColorNormal="@color/colorWhite"
+        app:fab_addButtonColorPressed="@color/colorWhite"
+        app:fab_addButtonPlusIconColor="@color/colorRed"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        app:fab_labelStyle="@style/custom_fab">
+            </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
+     -->
+
+    <com.getbase.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButtonLogOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fab_colorNormal="@color/colorWhite"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        app:fab_size="mini"
+        app:fab_icon="@drawable/ic_exit_to_app_black_24dp"
+        android:layout_margin="10dp"
+        app:fab_title="Log Out" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log Out"
+        android:gravity="bottom"
+        android:layout_marginTop="27dp"
+        android:fontFamily="monospace"
+        android:textColor="@color/colorWhite"
+        android:layout_toLeftOf="@+id/floatingActionButtonLogOut"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+
+
 
 
     <ToggleButton

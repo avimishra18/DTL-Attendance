@@ -2,15 +2,19 @@ package com.example.dtlattendance;
 
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,12 +50,15 @@ public class HistoryFragment extends Fragment {
     ArrayList<Float> timeValues = new ArrayList<>();
     List<AttendanceSession> attendanceSessionList;
     ListView listViewSession;
+    CardView cardViewSession;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history,container,false);
         listViewSession = view.findViewById(R.id.listViewSession);
+        cardViewSession = view.findViewById(R.id.cardViewSession);
+
         lineChart = view.findViewById(R.id.sessionChart);
         lineChart.setBackgroundColor(Color.WHITE);
         lineChart.setDrawGridBackground(true);
@@ -66,6 +73,11 @@ public class HistoryFragment extends Fragment {
         Legend legend = lineChart.getLegend();
         legend.setEnabled(true);
 
+        SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor editor = wmbPreference.edit();
+        editor.putBoolean("first",true);
+        editor.commit();
+
         attendanceSessionList = new ArrayList<>();
         return view;
     }
@@ -76,57 +88,48 @@ public class HistoryFragment extends Fragment {
 
         FirebaseDatabase.getInstance().getReference("Sessions")
                 .child(FirebaseAuth.getInstance().getUid())
-                .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        attendanceSessionList.clear();
 
-                attendanceSessionList.clear();
+                        for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
+                            AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                            attendanceSessionList.add(attendanceSession);
+                            float value = (float) Double.parseDouble(attendanceSession.getTime());
+                            timeValues.add(value);
+                        }
+                        try {
+                            HistoryList adapter = new HistoryList(getActivity(), attendanceSessionList);
+                            listViewSession.setAdapter(adapter);
+                            setCharData();
+                        } catch (Exception e) {
+                            e.getMessage();
+                        }
+                    }
 
-                for(DataSnapshot sessionSnapShot: dataSnapshot.getChildren()){
-                    AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
-                    attendanceSessionList.add(attendanceSession);
-                    float value = (float) Double.parseDouble(attendanceSession.getTime());
-                    timeValues.add(value);
-                }
-                try {
-                    HistoryList adapter = new HistoryList(getActivity(), attendanceSessionList);
-                    listViewSession.setAdapter(adapter);
-                    Toast.makeText(getContext(), ""+timeValues.size(), Toast.LENGTH_SHORT).show();
-                    setCharData();
-                }catch (Exception e){
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
+                });
 
-            }
-        });
-        AttendanceSession attendanceSession = new AttendanceSession("xxxx","yyyy","10");
+        AttendanceSession attendanceSession = new AttendanceSession("No Session", "Slow connection?", "");
         attendanceSessionList.add(attendanceSession);
-        HistoryList adapter = new HistoryList(getActivity(),attendanceSessionList);
+        HistoryList adapter = new HistoryList(getActivity(), attendanceSessionList);
         listViewSession.setAdapter(adapter);
-        Toast.makeText(getContext(), ""+timeValues.size(), Toast.LENGTH_SHORT).show();
     }
 
     private void setCharData(){
 
         final ArrayList<Entry> yValues = new ArrayList<>();
 
-        //Collections.sort(timeValues);
-
-
         for(int i=0;i<timeValues.size();i++){
             yValues.add(new Entry(i,timeValues.get(i)));
         }
 
-        /*
-        for(int i=0;i<50;i++)
-            yValues.add(new Entry(i,i*10));
-        */
-
         LineDataSet lineDataSet;
-        lineDataSet = new LineDataSet(yValues,"Toal Time");
+        lineDataSet = new LineDataSet(yValues,"Total Time");
         lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
         lineDataSet.setColor(lineColor);
         lineDataSet.setDrawCircles(false);
@@ -140,8 +143,8 @@ public class HistoryFragment extends Fragment {
 
         LineData lineData = new LineData(lineDataSet);
         lineData.setDrawValues(false);
-
         lineChart.setData(lineData);
         lineChart.invalidate();
+        cardViewSession.setVisibility(View.VISIBLE);
     }
 }

@@ -181,6 +181,7 @@ public class LoginActivity extends AppCompatActivity {
                                         editor.putString("username", ds.child(mAuth.getUid()).getValue(User.class).getUsername());
                                         String admin = ds.child(mAuth.getUid()).getValue(User.class).getAdmin();
                                         editor.putString("admin", admin);
+                                        editor.putString("total", ds.child(mAuth.getUid()).getValue(User.class).getTotal());
                                         editor.apply();
 
                                         if (admin != null)

@@ -6,13 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".UserHomeActivity">
 
-    <Button
-        android:id="@+id/buttonUserLogOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:text="Log Out"/>
-
     <FrameLayout
         android:id="@+id/frameLayoutUser"
         android:layout_width="match_parent"

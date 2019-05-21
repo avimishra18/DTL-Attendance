@@ -16,7 +16,6 @@ import com.google.firebase.auth.FirebaseAuth;
 public class UserHomeActivity extends AppCompatActivity {
 
     //Declaration UI elements
-    Button buttonUserLogOut;
     BottomNavigationView bottomNavigationUser;
 
     //Declaring an instance of FireBase Auth
@@ -28,7 +27,6 @@ public class UserHomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_home);
 
         //Linking up the XML & Java objects
-        buttonUserLogOut = findViewById(R.id.buttonUserLogOut);
         bottomNavigationUser = findViewById(R.id.bottomNavigationUser);
 
         // Initialization FireBase Auth
@@ -43,17 +41,6 @@ public class UserHomeActivity extends AppCompatActivity {
 
         //Setting a listener for BottomNavigation
         bottomNavigationUser.setOnNavigationItemSelectedListener(navListener);
-
-        //On click listener for log out
-        buttonUserLogOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAuth.signOut();
-                Intent intent = new Intent(UserHomeActivity.this,LoginActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
     }
 
     //Bottom Navigation Changing View Listener switching to different Fragments

@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -46,6 +47,7 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home,container,false);
         buttonStartSession = view.findViewById(R.id.buttonStartSession);
+        FloatingActionButton floatingActionButtonLogOut = view.findViewById(R.id.floatingActionButtonLogOut);
 
         //Media player for button sound effect
         final MediaPlayer buttonSoundOn = MediaPlayer.create(getActivity(),R.raw.wifi_onn);
@@ -54,6 +56,21 @@ public class HomeFragment extends Fragment {
         //If Service is not running then button gets disabled
         if (isMyServiceRunning(WifiService.class)) {
             buttonStartSession.setChecked(true);
+        }
+        else{
+            //Marking User as offline if service not running
+            //Shared Preference to get other details
+            SharedPreferences pref = getContext().getSharedPreferences("User",Context.MODE_PRIVATE);
+            String storedUsername =     pref.getString("username",null);
+            String storedemail =     pref.getString("email",null);
+            String storedAdmin =  pref.getString("admin",null);
+            String storedTotal = pref.getString("total",null);
+            //Marking the User as offline
+            User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal);
+            databaseReferenceUser = FirebaseDatabase.getInstance()
+                    .getReference("Users")
+                    .child(FirebaseAuth.getInstance().getUid());
+            databaseReferenceUser.setValue(activeUser);
         }
 
         //On click listener for Start/Stop Wifi Button
@@ -99,6 +116,18 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+
+        floatingActionButtonLogOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(), "Working", Toast.LENGTH_SHORT).show();
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(getActivity(),LoginActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            }
+        });
+
         return view;
     }
 
