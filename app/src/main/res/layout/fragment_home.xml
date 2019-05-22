@@ -97,10 +97,7 @@
         android:textSize="14sp"
         android:textStyle="bold" />
 
-
-
-
-
+    <!-- Main toggle button for the Wi-Fi -->
     <ToggleButton
         android:id="@+id/buttonStartSession"
         android:layout_width="150dp"

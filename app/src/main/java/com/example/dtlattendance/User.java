@@ -3,7 +3,7 @@ package com.example.dtlattendance;
 import java.util.Comparator;
 
 public class User {
-    public String email,username,admin,online,total;
+    public String admin,email,online,total,uid,username;
 
     //Compare to method
     public int compareTo(User compareUser) {
@@ -32,12 +32,32 @@ public class User {
     public User() {
     }
 
+    public User(String email, String username, String admin, String online, String total, String uid) {
+        this.admin = admin;
+        this.email = email;
+        this.online = online;
+        this.total = total;
+        this.uid = uid;
+        this.username = username;
+    }
+
+    public User(String email, String username, String uid) {
+        this.admin="0";
+        this.email = email;
+        this.online="0";
+        this.total ="0";
+        this.uid = uid;
+        this.username = username;
+    }
+
+    /*
     public User(String email, String username, String admin, String online) {
         this.email = email;
         this.username = username;
         this.admin = admin;
         this.online = online;
         this.total ="0";
+        this.uid=FirebaseAuth.getInstance().getUid();
     }
 
     public User(String email, String username) {
@@ -46,6 +66,7 @@ public class User {
         this.admin="0";
         this.online="0";
         this.total ="0";
+        this.uid=FirebaseAuth.getInstance().getUid();
     }
 
     public User(String email, String username, String admin, String online, String total) {
@@ -54,9 +75,17 @@ public class User {
         this.admin = admin;
         this.online = online;
         this.total = total;
+        this.uid=FirebaseAuth.getInstance().getUid();
+    }
+    */
+
+    public String getUid() {
+        return uid;
     }
 
-
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
 
     public String getTotal() {
         return total;

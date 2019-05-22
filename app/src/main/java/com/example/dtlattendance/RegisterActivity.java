@@ -101,18 +101,16 @@ public class RegisterActivity extends AppCompatActivity {
                                 //We will store the additional fields in FireBase Database
 
                                 //Creating a new object of User
-                                User user = new User(email,username);
+                                User userNew = new User(email,username,mAuth.getUid());
 
                                 //Storing it in the Database
                                 FirebaseDatabase.getInstance().getReference("Users")
                                     .child(FirebaseAuth.getInstance().getCurrentUser().getUid()) // Under User new Child with name UID
-                                    .setValue(user) //Sets the value of the child as user
+                                    .setValue(userNew) //Sets the value of the child as user
                                     .addOnCompleteListener(new OnCompleteListener<Void>() { //On complete listener for custom fields
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if(task.isSuccessful()){
-                                                Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
-
                                                 Intent intentSwitchLogin = new Intent(RegisterActivity.this,LoginActivity.class);
                                                 intentSwitchLogin.putExtra("email",email);
                                                 startActivity(intentSwitchLogin);

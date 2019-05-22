@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -46,6 +47,7 @@ public class HistoryFragment extends Fragment {
     LineChart lineChart;
     int linerChartColor =  Color.parseColor("#F9484A");
     int lineColor =  Color.parseColor("#FBDF55");
+    RelativeLayout relativeLayoutHistory;
 
     ArrayList<Float> timeValues = new ArrayList<>();
     List<AttendanceSession> attendanceSessionList;
@@ -58,7 +60,7 @@ public class HistoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_history,container,false);
         listViewSession = view.findViewById(R.id.listViewSession);
         cardViewSession = view.findViewById(R.id.cardViewSession);
-
+        relativeLayoutHistory = view.findViewById(R.id.relativeLayoutHistory);
         lineChart = view.findViewById(R.id.sessionChart);
         lineChart.setBackgroundColor(Color.WHITE);
         lineChart.setDrawGridBackground(true);
@@ -86,34 +88,79 @@ public class HistoryFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        FirebaseDatabase.getInstance().getReference("Sessions")
-                .child(FirebaseAuth.getInstance().getUid())
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        attendanceSessionList.clear();
+        SharedPreferences pref = getActivity().getSharedPreferences("User",Context.MODE_PRIVATE);
+        String storedAdmin =  pref.getString("admin","0");
 
-                        for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
-                            AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
-                            attendanceSessionList.add(attendanceSession);
-                            float value = (float) Double.parseDouble(attendanceSession.getTime());
-                            timeValues.add(value);
+        if(storedAdmin.equals("0")) {
+            FirebaseDatabase.getInstance().getReference("Sessions")
+                    .child(FirebaseAuth.getInstance().getUid())
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            attendanceSessionList.clear();
+
+                            for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
+                                AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                                attendanceSessionList.add(attendanceSession);
+                                float value = (float) Double.parseDouble(attendanceSession.getTime());
+                                value /= 60;
+                                timeValues.add(value);
+                            }
+                            try {
+                                HistoryList adapter = new HistoryList(getActivity(), attendanceSessionList);
+                                if (!attendanceSessionList.isEmpty()) {
+                                    listViewSession.setAdapter(adapter);
+                                    setCharData();
+                                }
+                            } catch (Exception e) {
+                                e.getMessage();
+                            }
                         }
-                        try {
-                            HistoryList adapter = new HistoryList(getActivity(), attendanceSessionList);
-                            listViewSession.setAdapter(adapter);
-                            setCharData();
-                        } catch (Exception e) {
-                            e.getMessage();
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                         }
-                    }
+                    });
+        }
+        else if(storedAdmin.equals("1")){
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+            relativeLayoutHistory.setVisibility(View.GONE);
 
-                    }
-                });
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("history",Context.MODE_PRIVATE);
+            String uid = sharedPreferences.getString("uid","0");
 
+            FirebaseDatabase.getInstance().getReference("Sessions")
+                    .child(uid)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            attendanceSessionList.clear();
+
+                            for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
+                                AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                                attendanceSessionList.add(attendanceSession);
+                                float value = (float) Double.parseDouble(attendanceSession.getTime());
+                                value /= 60;
+                                timeValues.add(value);
+                            }
+                            try {
+                                HistoryList adapter = new HistoryList(getActivity(), attendanceSessionList);
+                                if (!attendanceSessionList.isEmpty()) {
+                                    listViewSession.setAdapter(adapter);
+                                    setCharData();
+                                }
+                            } catch (Exception e) {
+                                e.getMessage();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+        }
         AttendanceSession attendanceSession = new AttendanceSession("No Session", "Slow connection?", "");
         attendanceSessionList.add(attendanceSession);
         HistoryList adapter = new HistoryList(getActivity(), attendanceSessionList);

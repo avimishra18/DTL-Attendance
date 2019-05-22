@@ -119,6 +119,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(LoginActivity.this,RegisterActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -136,6 +137,7 @@ public class LoginActivity extends AppCompatActivity {
             //String storedUsername =     pref.getString("username",null);
             //String storedemail =     pref.getString("email",null);
             String storedAdmin =  pref.getString("admin",null);
+            String storedUID = pref.getString("uid","0");
 
             if(storedAdmin != null)
                 if(storedAdmin.equals("0")){
@@ -165,7 +167,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     //Redirecting the admin to the admin or the user part
                     //Retrieving the custom files from the FireBase Database
-                    FirebaseDatabase.getInstance().getReference().addValueEventListener(new ValueEventListener() {
+                    FirebaseDatabase.getInstance().getReference().addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             //Data Snapshot takes the snapshot of the whole database & we iterate and get the one which we want
@@ -182,6 +184,7 @@ public class LoginActivity extends AppCompatActivity {
                                         String admin = ds.child(mAuth.getUid()).getValue(User.class).getAdmin();
                                         editor.putString("admin", admin);
                                         editor.putString("total", ds.child(mAuth.getUid()).getValue(User.class).getTotal());
+                                        editor.putString("uid",mAuth.getUid());
                                         editor.apply();
 
                                         if (admin != null)

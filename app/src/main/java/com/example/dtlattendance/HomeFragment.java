@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.File;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
@@ -65,8 +66,10 @@ public class HomeFragment extends Fragment {
             String storedemail =     pref.getString("email",null);
             String storedAdmin =  pref.getString("admin",null);
             String storedTotal = pref.getString("total",null);
+            String storedUid = pref.getString("uid",null);
+
             //Marking the User as offline
-            User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal);
+            User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal,storedUid);
             databaseReferenceUser = FirebaseDatabase.getInstance()
                     .getReference("Users")
                     .child(FirebaseAuth.getInstance().getUid());
@@ -86,14 +89,12 @@ public class HomeFragment extends Fragment {
                                 wifiAnimation = (AnimationDrawable) buttonStartSession.getBackground();
                                 wifiAnimation.setOneShot(true);
 
-                                Toast.makeText(getActivity(), "Start", Toast.LENGTH_SHORT).show();
                                 wifiAnimation.start();
                                 buttonSoundOn.start();
                                 startService(v);
                             }
                             else {
                                 buttonStartSession.setChecked(false);
-                                Toast.makeText(getContext(), "Service already running", Toast.LENGTH_SHORT).show();
                             }
                         }
                         else{
@@ -109,7 +110,6 @@ public class HomeFragment extends Fragment {
                     }
                 }
                 else if(!buttonStartSession.isChecked()){
-                    Toast.makeText(getActivity(), "Stop", Toast.LENGTH_SHORT).show();
                     buttonSoundOff.start();
                     buttonStartSession.setBackgroundResource(R.drawable.wifi_selector);
                     stopService(v);
@@ -120,7 +120,16 @@ public class HomeFragment extends Fragment {
         floatingActionButtonLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "Working", Toast.LENGTH_SHORT).show();
+                if(isMyServiceRunning(WifiService.class)){
+                    buttonStartSession.setBackgroundResource(R.drawable.wifi_selector);
+                    stopService(v);
+                }
+                //Clearing data from Shared Preference
+                SharedPreferences pref = getActivity().getSharedPreferences("User",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = pref.edit();
+                editor.clear();
+                editor.commit();
+
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(getActivity(),LoginActivity.class);
                 startActivity(intent);
@@ -140,17 +149,6 @@ public class HomeFragment extends Fragment {
     public void stopService(View view){
         Intent serviceIntent = new Intent(getActivity(),WifiService.class);
         getActivity().stopService(serviceIntent);
-        /*
-        //Shared Preference to get other details
-        SharedPreferences pref = getActivity().getSharedPreferences("User",Context.MODE_PRIVATE);
-        String storedUsername =     pref.getString("username",null);
-        String storedemail =     pref.getString("email",null);
-        String storedAdmin =  pref.getString("admin",null);
-
-        //Marking the User as offline
-        User activeUser = new User(storedemail,storedUsername,storedAdmin,"0");
-        databaseReferenceUser.setValue(activeUser);
-        */
     }
 
     //To check if the service is running

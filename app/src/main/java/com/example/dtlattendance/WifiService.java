@@ -15,12 +15,16 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.util.Log;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -58,17 +62,16 @@ public class WifiService extends Service {
                     String storedemail =     pref.getString("email",null);
                     String storedAdmin =  pref.getString("admin",null);
                     String storedTotal = pref.getString("total",null);
+                    String storeduid = pref.getString("uid",null);
+
+
                     //Marking the User as offline
-                    User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal);
+
+                    User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal,storeduid);
                     databaseReferenceUser = FirebaseDatabase.getInstance()
                             .getReference("Users")
                             .child(FirebaseAuth.getInstance().getUid());
                     databaseReferenceUser.setValue(activeUser);
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     connected=false;
                     break;
             }
@@ -88,10 +91,10 @@ public class WifiService extends Service {
 
         //Final Notification Generator
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
-
+        Integer minutes = Math.round(count/60);
         Notification finalNotification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
                 .setContentTitle("Session Ended")
-                .setContentText("Total session time : " + Long.toString(count)+" seconds")
+                .setContentText("Total time: " +minutes+" minutes "+count%60+" seconds")
                 .setSmallIcon(R.drawable.ic_wifi_black_24dp)
                 .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
                 .build();
@@ -112,9 +115,10 @@ public class WifiService extends Service {
         String storedemail =     pref.getString("email",null);
         String storedAdmin =  pref.getString("admin",null);
         String storedTotal = pref.getString("total",null);
+        String storeduid = pref.getString("uid",null);
 
         //Marking the User as offline & updating scores
-        User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal);
+        User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal,storeduid);
         databaseReferenceUser.setValue(activeUser);
 
         stopSelf();
@@ -152,6 +156,8 @@ public class WifiService extends Service {
                 String storedemail =     pref.getString("email",null);
                 String storedAdmin =  pref.getString("admin",null);
                 String storedTotal = pref.getString("total",null);
+                String storeduid = pref.getString("uid",null);
+
 
                 //While our broadcast receiver is true
                 while (connected){
@@ -162,9 +168,10 @@ public class WifiService extends Service {
                         PendingIntent pendingIntent =  PendingIntent.getActivity(getApplicationContext(),
                                 0, notificationIntent, 0);
 
+                        Integer minutes = Math.round(count/60);
                         Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
                                 .setContentTitle("Active Session")
-                                .setContentText("Current session time: " + Long.toString(count)+" seconds")
+                                .setContentText("Current session time: " +minutes+" minutes "+count%60+" seconds")
                                 .setOnlyAlertOnce(true)
                                 .setSmallIcon(R.drawable.ic_wifi_black_24dp)
                                 .setContentIntent(pendingIntent)
@@ -178,32 +185,52 @@ public class WifiService extends Service {
                         //FireBase Update (End-Time & Total Time) Only
                         AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Long.toString(count));
                         if(sessionID != null) {
-                            //Updating the session
-                            databaseReferenceSession.child(sessionID).setValue(attendanceSession);
 
                             //Marking the User as online & updating total time
                             Long total = count+Integer.valueOf(storedTotal);
                             editor.putString("total",String.valueOf(total));
                             editor.apply();
-                            User activeUser = new User(storedemail,storedUsername,storedAdmin,"1",String.valueOf(total));
-                            databaseReferenceUser.setValue(activeUser);
+                            User activeUser = new User(storedemail,storedUsername,storedAdmin,"1",String.valueOf(total),storeduid);
+                            if (count % 11 == 0) {
+                                //Updating the session
+                                databaseReferenceSession
+                                        .child(sessionID)
+                                        .setValue(attendanceSession)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful())
+                                            Log.d("Info","Successful");
+                                    }
+                                });
+                                databaseReferenceUser.setValue(activeUser).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful())
+                                            Log.d("Info","Successful");
+                                    }
+                                });;
+                            }
                         }
 
                         //Thread sleeps for 1 second so that is equal to 1s of actual time spent
                         Thread.sleep(1000);
                         count+=1;
+
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+
                 }
 
                 //Code when Wi-Fi gets disconnected (i.e. connection=false)
                 //Notification Manager
                 NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
 
+                Integer minutes = Math.round(count/60);
                 Notification finalNotification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
                         .setContentTitle("Session Ended")
-                        .setContentText("Total session time : " + Long.toString(count)+" seconds")
+                        .setContentText("Total session time: " +minutes+" minutes "+count%60+" seconds")
                         .setSmallIcon(R.drawable.ic_wifi_black_24dp)
                         .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
                         .build();
@@ -223,7 +250,7 @@ public class WifiService extends Service {
 
                 //Marking the User as offline & updating scores
                 String storedTotalUpdated = pref.getString("total",null);
-                User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotalUpdated);
+                User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotalUpdated,storeduid);
                 databaseReferenceUser.setValue(activeUser);
 
                 //Stop Self

@@ -6,11 +6,157 @@
     android:layout_height="match_parent"
     tools:context=".AdminHomeActivity">
 
-    <Button
-        android:id="@+id/buttonAdminLogOut"
+    <!-- Relative Layout for the BG -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleX="1"
+        android:alpha="0.85">
+        <!-- Header Toolbar of The App -->
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/bgHeaderHomeFragment"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:background="@drawable/header_login"
+            android:scaleX="-1"
+            android:elevation="5dp" />
+        <!-- Various Circle UI in the program -->
+        <ImageView
+            android:id="@+id/HomeFragmentcircle1"
+            android:layout_width="134dp"
+            android:layout_height="134dp"
+            android:layout_below="@+id/bgHeaderHomeFragment"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="90dp"
+            android:alpha="0.8"
+            android:layout_marginRight="-100dp"
+            android:src="@drawable/circletransparant" />
+        <ImageView
+            android:id="@+id/HomeFragmentcircle2"
+            android:layout_width="134dp"
+            android:layout_height="134dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="-100dp"
+            android:layout_marginBottom="50dp"
+            android:src="@drawable/circletransparant" />
+        <ImageView
+            android:id="@+id/HomeFragmentcircle3"
+            android:layout_width="182dp"
+            android:layout_height="182dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="-80dp"
+            android:layout_marginBottom="-30dp"
+            android:src="@drawable/circle" />
+        <ImageView
+            android:id="@+id/HomeFragmentcircle4"
+            android:layout_width="134dp"
+            android:layout_height="134dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="-50dp"
+            android:layout_marginBottom="-50dp"
+            android:layout_toLeftOf="@+id/HomeFragmentcircle3"
+            android:src="@drawable/circletransparant" />
+
+    </RelativeLayout>
+
+    <!--
+    <com.getbase.floatingactionbutton.FloatingActionsMenu
+        android:id="@+id/floatingActionMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Log Out"/>
+        app:fab_addButtonColorNormal="@color/colorWhite"
+        app:fab_addButtonColorPressed="@color/colorWhite"
+        app:fab_addButtonPlusIconColor="@color/colorRed"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        app:fab_labelStyle="@style/custom_fab">
+            </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
+     -->
+
+
+    <RelativeLayout
+        android:id="@+id/relativeLayoutAdminLeaderBoard"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:text="DTL Attendance"
+            android:fontFamily="monospace"
+            android:textColor="@color/colorWhite"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floatingActionButtonLogOut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@color/colorWhite"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            app:fab_size="mini"
+            app:fab_icon="@drawable/ic_exit_to_app_black_24dp"
+            android:layout_margin="10dp"
+            app:fab_title="Log Out" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Log Out"
+            android:gravity="bottom"
+            android:layout_marginTop="27dp"
+            android:fontFamily="monospace"
+            android:textColor="@color/colorWhite"
+            android:layout_toLeftOf="@+id/floatingActionButtonLogOut"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <ListView
+            android:id="@+id/listViewAdminLeaderBoard"
+            android:layout_below="@+id/floatingActionButtonLogOut"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:divider="@null" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayoutAdminHistory"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <FrameLayout
+            android:id="@+id/frameLayoutAdmin"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/buttonGoBack"/>
+
+        <Button
+            android:id="@+id/buttonGoBack"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="70dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/button_ui_alternative"
+            android:paddingLeft="-10dp"
+            android:paddingRight="-10dp"
+            android:text="Back"
+            android:fontFamily="monospace"
+            android:textColor="@color/colorRed" />
+
+
+
+
+
+    </RelativeLayout>
 
 </RelativeLayout>
