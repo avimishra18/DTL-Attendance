@@ -111,14 +111,15 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:text="Email"
-                        android:fontFamily="monospace"
-                        android:textColor="@color/colorRed"
+                        android:fontFamily="@font/proxima_nova_light"
+                        android:textColor="@color/colorPurple"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <EditText
                         android:id="@+id/editTextRegisterEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/proxima_nova_light"
                         android:layout_marginLeft="10dp"
                         android:layout_marginRight="10dp"
                         android:inputType="textEmailAddress" />
@@ -129,14 +130,16 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:text="Name"
-                        android:fontFamily="monospace"
-                        android:textColor="@color/colorRed"
+                        android:fontFamily="@font/proxima_nova_light"
+                        android:textColor="@color/colorPurple"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <EditText
                         android:id="@+id/editTextRegisterUsername"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/proxima_nova_light"
+                        android:maxLength="10"
                         android:layout_marginLeft="10dp"
                         android:layout_marginRight="10dp"
                         android:inputType="text" />
@@ -147,8 +150,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:text="Password"
-                        android:fontFamily="monospace"
-                        android:textColor="@color/colorRed"
+                        android:fontFamily="@font/proxima_nova_light"
+                        android:textColor="@color/colorPurple"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <android.support.design.widget.TextInputLayout
@@ -161,6 +164,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="10dp"
+                            android:fontFamily="@font/proxima_nova_light"
                             android:layout_marginRight="10dp"
                             android:inputType="textPassword" />
                     </android.support.design.widget.TextInputLayout>
@@ -171,8 +175,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:text="Confirm Password"
-                        android:fontFamily="monospace"
-                        android:textColor="@color/colorRed"
+                        android:fontFamily="@font/proxima_nova_light"
+                        android:textColor="@color/colorPurple"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <android.support.design.widget.TextInputLayout
@@ -185,6 +189,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="10dp"
+                            android:fontFamily="@font/proxima_nova_light"
                             android:layout_marginRight="10dp"
                             android:inputType="textPassword" />
                     </android.support.design.widget.TextInputLayout>
@@ -215,7 +220,7 @@
             android:background="@drawable/background_ui_round"
             android:text="REGISTER"
             android:textStyle="bold"
-            android:fontFamily="casual"
+            android:fontFamily="@font/proxima_nova_bold"
             android:textColor="@color/colorWhite" />
     </RelativeLayout>
 
@@ -230,7 +235,7 @@
         android:visibility="gone"
         android:layout_below="@+id/scrollViewLogin"
         android:layout_centerHorizontal="true"
-        app:SpinKit_Color="@color/colorRed" />
+        app:SpinKit_Color="@color/colorPurple" />
 
     <!-- Switch To Log In -->
     <Button
@@ -247,7 +252,7 @@
         android:paddingLeft="-10dp"
         android:paddingRight="-10dp"
         android:text="ALREADY REGISTERED?"
-        android:fontFamily="monospace"
-        android:textColor="@color/colorRed" />
+        android:fontFamily="@font/proxima_nova_bold"
+        android:textColor="@color/colorPurple" />
 
 </RelativeLayout>

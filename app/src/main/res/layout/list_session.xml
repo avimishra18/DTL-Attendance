@@ -13,16 +13,30 @@
             android:layout_height="match_parent">
 
             <TextView
+                android:id="@+id/textViewDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="Date"
+                android:fontFamily="@font/proxima_nova_bold"
+                android:textColor="@color/colorBlue"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/textViewInTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:text="In Time"
-                android:fontFamily="monospace"
-                android:textColor="@color/colorRed"
+                android:layout_below="@+id/textViewDate"
+                android:fontFamily="@font/proxima_nova_light"
+                android:textColor="@color/colorBlue"
+                android:alpha="0.75"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
+            <!--
             <TextView
                 android:id="@+id/textViewOutTime"
                 android:layout_width="wrap_content"
@@ -30,22 +44,37 @@
                 android:layout_margin="10dp"
                 android:text="Out Time"
                 android:layout_below="@+id/textViewInTime"
-                android:fontFamily="monospace"
-                android:textColor="@color/colorRed"
+                android:fontFamily="@font/proxima_nova_light"
+                android:textColor="@color/colorPurple"
                 android:textSize="14sp"
                 android:textStyle="bold" />
+            -->
 
             <TextView
                 android:id="@+id/textViewTotalTime"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:layout_alignParentEnd="true"
                 android:layout_margin="15dp"
-                android:text="time"
-                android:fontFamily="monospace"
-                android:textColor="@color/colorRed"
-                android:textSize="30sp"
+                android:text="800"
+                android:textAlignment="center"
+                android:fontFamily="@font/proxima_nova_bold"
+                android:textColor="@color/colorBlue"
+                android:textSize="22sp"
                 android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/circularProgressBar"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                style="?android:progressBarStyleHorizontal"
+                android:progress="80"
+                android:textAlignment="center"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:progressDrawable="@drawable/circle_progress"/>
+
         </RelativeLayout>
 
     </android.support.v7.widget.CardView>

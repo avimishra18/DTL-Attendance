@@ -1,14 +1,10 @@
 package com.example.dtlattendance;
 
 import android.content.Context;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,15 +14,17 @@ import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -37,16 +35,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class HistoryFragment extends Fragment {
 
     //Declaration
-    LineChart lineChart;
-    int linerChartColor =  Color.parseColor("#F9484A");
-    int lineColor =  Color.parseColor("#FBDF55");
+    BarChart barChart;
+    int lineColorPurple =  Color.parseColor("#983CFF");
+    int lineColorBlue =  Color.parseColor("#2FB4FF");
+
     RelativeLayout relativeLayoutHistory;
 
     ArrayList<Float> timeValues = new ArrayList<>();
@@ -61,18 +58,17 @@ public class HistoryFragment extends Fragment {
         listViewSession = view.findViewById(R.id.listViewSession);
         cardViewSession = view.findViewById(R.id.cardViewSession);
         relativeLayoutHistory = view.findViewById(R.id.relativeLayoutHistory);
-        lineChart = view.findViewById(R.id.sessionChart);
-        lineChart.setBackgroundColor(Color.WHITE);
-        lineChart.setDrawGridBackground(true);
-        lineChart.setGridBackgroundColor(Color.WHITE);
-        lineChart.setDrawBorders(true);
-        lineChart.getDescription().setEnabled(false);
-        lineChart.setPinchZoom(false);
+        barChart = view.findViewById(R.id.sessionChart);
+        barChart.setBackgroundColor(Color.WHITE);
+        barChart.setGridBackgroundColor(Color.WHITE);
+        barChart.setDrawBorders(true);
+        barChart.getDescription().setEnabled(false);
+        barChart.setPinchZoom(false);
 
-        XAxis xAxis = lineChart.getXAxis();
+        XAxis xAxis = barChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 
-        Legend legend = lineChart.getLegend();
+        Legend legend = barChart.getLegend();
         legend.setEnabled(true);
 
         SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -169,29 +165,22 @@ public class HistoryFragment extends Fragment {
 
     private void setCharData(){
 
-        final ArrayList<Entry> yValues = new ArrayList<>();
+        final List<BarEntry> yValues = new ArrayList<>();
 
         for(int i=0;i<timeValues.size();i++){
-            yValues.add(new Entry(i,timeValues.get(i)));
+            yValues.add(new BarEntry(i+1,timeValues.get(i)));
         }
 
-        LineDataSet lineDataSet;
-        lineDataSet = new LineDataSet(yValues,"Total Time");
-        lineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-        lineDataSet.setColor(lineColor);
-        lineDataSet.setDrawCircles(false);
-        lineDataSet.setLineWidth(1);
-        lineDataSet.setFillAlpha(255);
-        lineDataSet.setDrawFilled(true);
-        Drawable gradientDrawable = ContextCompat.getDrawable(getContext(),R.drawable.background_ui);
-        lineDataSet.setFillDrawable(gradientDrawable);
+        BarDataSet barDataSet;
+        barDataSet = new BarDataSet(yValues,"Total Time");
+        barDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+        barDataSet.setGradientColor(lineColorBlue,lineColorPurple);
+        //barDataSet.setColors(lineColorBlue,lineColorLightBlue,lineColorPurple,lineColorLightPurple);
 
-        //lineDataSet.setFillColor(linerChartColor);
-
-        LineData lineData = new LineData(lineDataSet);
-        lineData.setDrawValues(false);
-        lineChart.setData(lineData);
-        lineChart.invalidate();
+        BarData barData = new BarData(barDataSet);
+        barData.setDrawValues(false);
+        barChart.setData(barData);
+        barChart.invalidate();
         cardViewSession.setVisibility(View.VISIBLE);
     }
 }

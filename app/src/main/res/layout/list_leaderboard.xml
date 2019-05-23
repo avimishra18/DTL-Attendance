@@ -13,40 +13,49 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar
+                android:id="@+id/progressBarCustom"
+                android:layout_height="30dp"
+                android:layout_width="180dp"
+                android:layout_marginLeft="20dp"
+                android:layout_centerVertical="true"
+                app:rcProgressColor="@color/colorLightBlue"
+                app:rcSecondaryProgressColor="@color/colorWhite"
+                app:rcBackgroundColor="@color/colorWhite" />
+
+            <ImageView
+                android:id="@+id/loginUIcircle"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginLeft="10dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/circle" />
 
             <TextView
                 android:id="@+id/textViewRank"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_marginLeft="20dp"
                 android:text="1"
-                android:fontFamily="monospace"
-                android:textColor="@color/colorRed"
+                android:alpha="0.95"
+                android:fontFamily="@font/proxima_nova_bold"
+                android:textColor="@color/colorWhite"
                 android:layout_centerVertical="true"
-                android:textSize="30sp"
+                android:textSize="25sp"
                 android:textStyle="bold" />
-
-            <com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar
-                android:id="@+id/progressBarCustom"
-                android:layout_height="40dp"
-                android:layout_width="180dp"
-                android:layout_toRightOf="@+id/textViewRank"
-                android:layout_centerVertical="true"
-                app:rcProgressColor="@color/colorRed"
-                app:rcSecondaryProgressColor="@color/colorYellow"
-                app:rcBackgroundColor="@color/colorWhite" />
 
             <TextView
                 android:id="@+id/textViewUserName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="20dp"
+                android:layout_marginLeft="20dp"
                 android:text="Username"
+                android:fontFamily="@font/proxima_nova_light"
+                android:layout_toRightOf="@id/loginUIcircle"
+                android:textAllCaps="true"
                 android:maxLength="10"
                 android:layout_centerVertical="true"
-                android:layout_toRightOf="@+id/textViewRank"
-                android:fontFamily="monospace"
-                android:textColor="@color/colorWhite"
+                android:textColor="@color/colorDarkPurple"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -55,13 +64,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_margin="15dp"
+                android:layout_margin="10dp"
                 android:text="99"
-                android:fontFamily="monospace"
+                android:fontFamily="@font/proxima_nova_light"
                 android:layout_centerVertical="true"
-                android:textColor="@color/colorRed"
-                android:textSize="25sp"
+                android:textColor="@color/colorPurple"
+                android:textSize="20sp"
                 android:textStyle="bold" />
+
         </RelativeLayout>
 
     </android.support.v7.widget.CardView>

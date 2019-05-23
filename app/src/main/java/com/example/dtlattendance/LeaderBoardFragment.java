@@ -30,6 +30,8 @@ public class LeaderBoardFragment extends Fragment {
     //Declarations
     List<User> leaderBoardList;
     ListView leaderBoardSession;
+
+
     private View view;
     @Nullable
     @Override
@@ -77,5 +79,11 @@ public class LeaderBoardFragment extends Fragment {
 
                     }
                 });
+
+        User loadingScreen = new User("","Loading...","","","-1","");
+        leaderBoardList.add(loadingScreen);
+        LeaderBoardList adapter = new LeaderBoardList(getActivity(),leaderBoardList);
+        leaderBoardSession.setAdapter(adapter);
+
     }
 }

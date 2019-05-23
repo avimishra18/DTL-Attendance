@@ -1,5 +1,6 @@
 package com.example.dtlattendance;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -41,6 +42,8 @@ public class UserHomeActivity extends AppCompatActivity {
 
         //Setting a listener for BottomNavigation
         bottomNavigationUser.setOnNavigationItemSelectedListener(navListener);
+
+        //Loading all the fragments
     }
 
     //Bottom Navigation Changing View Listener switching to different Fragments

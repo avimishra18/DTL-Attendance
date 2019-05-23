@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -103,6 +104,9 @@ public class AdminHomeActivity extends AppCompatActivity {
         buttonGoBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frameLayoutAdmin);
+                if(fragment != null)
+                    getSupportFragmentManager().beginTransaction().remove(fragment).commit();
                 relativeLayoutAdminLeaderBoard.setVisibility(View.VISIBLE);
                 relativeLayoutAdminHistory.setVisibility(View.GONE);
             }

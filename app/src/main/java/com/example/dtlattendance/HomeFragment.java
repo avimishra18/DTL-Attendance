@@ -20,16 +20,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import android.widget.ToggleButton;
-
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.io.File;
-import java.util.List;
 
 public class HomeFragment extends Fragment {
 
@@ -49,10 +44,6 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home,container,false);
         buttonStartSession = view.findViewById(R.id.buttonStartSession);
         FloatingActionButton floatingActionButtonLogOut = view.findViewById(R.id.floatingActionButtonLogOut);
-
-        //Media player for button sound effect
-        final MediaPlayer buttonSoundOn = MediaPlayer.create(getActivity(),R.raw.wifi_onn);
-        final MediaPlayer buttonSoundOff = MediaPlayer.create(getActivity(),R.raw.wifi_off);
 
         //If Service is not running then button gets disabled
         if (isMyServiceRunning(WifiService.class)) {
@@ -90,7 +81,6 @@ public class HomeFragment extends Fragment {
                                 wifiAnimation.setOneShot(true);
 
                                 wifiAnimation.start();
-                                buttonSoundOn.start();
                                 startService(v);
                             }
                             else {
@@ -110,7 +100,6 @@ public class HomeFragment extends Fragment {
                     }
                 }
                 else if(!buttonStartSession.isChecked()){
-                    buttonSoundOff.start();
                     buttonStartSession.setBackgroundResource(R.drawable.wifi_selector);
                     stopService(v);
                 }

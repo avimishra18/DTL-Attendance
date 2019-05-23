@@ -86,7 +86,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
             android:text="DTL Attendance"
-            android:fontFamily="monospace"
+            android:fontFamily="@font/proxima_nova_bold"
             android:textColor="@color/colorWhite"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -109,7 +109,7 @@
             android:text="Log Out"
             android:gravity="bottom"
             android:layout_marginTop="27dp"
-            android:fontFamily="monospace"
+            android:fontFamily="@font/proxima_nova_light"
             android:textColor="@color/colorWhite"
             android:layout_toLeftOf="@+id/floatingActionButtonLogOut"
             android:textSize="14sp"
@@ -151,7 +151,7 @@
             android:paddingRight="-10dp"
             android:text="Back"
             android:fontFamily="monospace"
-            android:textColor="@color/colorRed" />
+            android:textColor="@color/colorPurple" />
 
 
 

@@ -3,14 +3,14 @@
 
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/colorRed"></solid>
+            <solid android:color="@color/colorPurple"></solid>
             <corners android:radius="100dp" />
         </shape>
     </item>
 
     <item>
         <shape android:shape="rectangle">
-            <gradient android:endColor="@color/colorYellow" android:startColor="@color/colorRed" />
+            <gradient android:endColor="@color/colorBlue" android:startColor="@color/colorPurple" />
         </shape>
     </item>
 </selector>

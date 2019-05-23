@@ -11,10 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
+import com.google.android.gms.common.util.Strings;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
@@ -42,32 +44,44 @@ public class LeaderBoardList extends ArrayAdapter<User> {
         RoundCornerProgressBar progressBarCustom = listViewItem.findViewById(R.id.progressBarCustom);
 
         User user = leaderBoardList.get(position);
-        textViewRank.setText(String.valueOf(position+1));
         textViewUserName.setText(user.getUsername());
 
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("MaxTotal", Context.MODE_PRIVATE);
         Integer max = sharedPreferences.getInt("max",1);
 
+
         //Getting total time as integer
         Integer totalTime = Integer.valueOf(user.getTotal());
         Float floatTime = Float.valueOf(totalTime);
-        Float floatmax = Float.valueOf(max);
-        Float score = floatTime/max*90;
-        Integer integerScore = Math.round(score);
 
+        if(floatTime==-1){
+            textViewRank.setText("");
+            textViewScore.setText("");
+        }else {
+            Float floatmax = Float.valueOf(max);
+            Float score = floatTime / max * 90+(float)Math.log10(totalTime);
+            if (score<0)
+                score=(float)0;
+            Integer integerScore = Math.round(score);
+            textViewRank.setText(String.valueOf(position+1));
 
-        //Custom Progress Bar
-        progressBarCustom.setMax(100);
+            //Custom Progress Bar
+            progressBarCustom.setMax(100);
 
-        if(score<35) {
-            progressBarCustom.setProgress(40);
-            progressBarCustom.setSecondaryProgress(42);
+            if(false) {
+                progressBarCustom.setProgress(23);
+                progressBarCustom.setSecondaryProgress(100);
+            }
+            else{
+                progressBarCustom.setProgress(score+5);
+                progressBarCustom.setSecondaryProgress(score+10);
+            }
+            textViewScore.setText(""+integerScore);
         }
-        else{
-            progressBarCustom.setProgress(score);
-            progressBarCustom.setSecondaryProgress(score+2);
-        }
-        textViewScore.setText(""+integerScore);
+
+
+
         return listViewItem;
     }
+
 }

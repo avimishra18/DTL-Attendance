@@ -54,11 +54,25 @@
             android:src="@drawable/circletransparant" />
     </RelativeLayout>
 
+    <TextView
+        android:id="@+id/textViewHeaderTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="20dp"
+        android:text="Leaderboard"
+        android:fontFamily="@font/proxima_nova_bold"
+        android:textColor="@color/colorWhite"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
     <ListView
         android:id="@+id/listViewLeaderBoard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
+        android:layout_below="@+id/textViewHeaderTitle"
         android:divider="@null" />
 
 </RelativeLayout>

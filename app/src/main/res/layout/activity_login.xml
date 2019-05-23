@@ -9,7 +9,6 @@
 
     <!-- Splash Screen Relative Layout -->
     <RelativeLayout
-        android:visibility="gone"
         android:id="@+id/relativeLayoutSplash"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -28,6 +27,7 @@
     <!-- Second Relative Layout with the UI elements -->
     <RelativeLayout
         android:id="@+id/relativeLayoutLogin"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -134,8 +134,8 @@
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
                             android:text="Email"
-                            android:fontFamily="monospace"
-                            android:textColor="@color/colorRed"
+                            android:fontFamily="@font/proxima_nova_light"
+                            android:textColor="@color/colorPurple"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <EditText
@@ -152,8 +152,8 @@
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
                             android:text="Password"
-                            android:fontFamily="monospace"
-                            android:textColor="@color/colorRed"
+                            android:fontFamily="@font/proxima_nova_light"
+                            android:textColor="@color/colorPurple"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <android.support.design.widget.TextInputLayout
@@ -194,7 +194,7 @@
                         android:background="@drawable/background_ui_round"
                         android:text="LOGIN"
                         android:textStyle="bold"
-                        android:fontFamily="casual"
+                        android:fontFamily="@font/proxima_nova_bold"
                         android:textColor="@color/colorWhite" />
                 </RelativeLayout>
 
@@ -209,7 +209,7 @@
                     android:visibility="gone"
                     android:layout_below="@id/cardviewLogin"
                     android:layout_centerHorizontal="true"
-                    app:SpinKit_Color="@color/colorRed" />
+                    app:SpinKit_Color="@color/colorPurple" />
 
                 <!-- Switch To Register Activity -->
                 <RelativeLayout
@@ -243,8 +243,8 @@
                     android:paddingLeft="-10dp"
                     android:paddingRight="-10dp"
                     android:text="FORGOT PASSSWORD?"
-                    android:fontFamily="monospace"
-                    android:textColor="@color/colorRed" />
+                    android:fontFamily="@font/proxima_nova_bold"
+                    android:textColor="@color/colorPurple" />
 
             </RelativeLayout>
         </ScrollView> <!-- Scroll View Which Contains All the Card Views -->

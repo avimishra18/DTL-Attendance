@@ -4,15 +4,15 @@
     <item
         android:id="@+id/navigationHistory"
         android:icon="@drawable/historyselector"
-        android:title="History"/>
+        android:title="HISTORY"/>
 
     <item
         android:id="@+id/navigationHome"
         android:icon="@drawable/homeselector"
-        android:title="Home"/>
+        android:title="HOME"/>
 
     <item
         android:id="@+id/navigationLeaderBoard"
         android:icon="@drawable/leaderboardselector"
-        android:title="Leaderboard"/>
+        android:title="LEADERBOARD"/>
 </menu>
