@@ -11,14 +11,13 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
         createNotificationChannel();
     }
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new
-                    NotificationChannel(Channel_ID, "Example Service Channel", NotificationManager.IMPORTANCE_DEFAULT);
+                    NotificationChannel(Channel_ID, "DTL Service Channel", NotificationManager.IMPORTANCE_DEFAULT);
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(serviceChannel);
         }

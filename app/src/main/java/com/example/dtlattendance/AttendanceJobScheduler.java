@@ -29,12 +29,14 @@ import static com.example.dtlattendance.App.Channel_ID;
 public class AttendanceJobScheduler extends JobService {
 
     //Declarations
-    private long count=0;
-    private String startTime, endTime,sessionID;
-    private boolean connected=true;
-    private static final String targetBSSID = "02:15:b2:00:01:00";
-    //private static final String targetBSSID = "00:23:68:17:65:d0";
+    private String startTime,endTime,sessionID;
     private boolean isTargetBSSID_InRange = false;
+    private long total;
+    private NotificationManagerCompat notificationManager;
+
+
+    //private static final String targetBSSID = "02:15:b2:00:01:00";
+    private static final String targetBSSID = "00:23:68:17:65:d0";
 
     //FireBase
     DatabaseReference databaseReferenceSession,databaseReferenceUser;
@@ -56,129 +58,168 @@ public class AttendanceJobScheduler extends JobService {
     }
 
     public void startMarkingAttendance(JobParameters params){
+
         //We shouldn't run a service on the main thread.
         new Thread(new Runnable() {
             @Override
             public void run() {
 
-                //FireBase Session
+                //Declerations
+                Long timeSpent=1L;
+                AttendanceSession attendanceSession;
+                User activeUser;
+
+
+                //FireBase Session (Making folder in session by USER UID)
                 databaseReferenceSession = FirebaseDatabase.getInstance()
                         .getReference("Sessions")
                         .child(FirebaseAuth.getInstance().getUid());
 
-                //Generation of UID
-                sessionID = databaseReferenceSession.push().getKey();
-
-                //FireBase to show if user is online
+                //FireBase User to show if he is online
                 databaseReferenceUser = FirebaseDatabase.getInstance()
                         .getReference("Users")
                         .child(FirebaseAuth.getInstance().getUid());
 
-                //Shared Preference to get other details
-                SharedPreferences pref = getSharedPreferences("User",MODE_PRIVATE);
+                //Notification Manager
+                notificationManager = NotificationManagerCompat.from(getApplicationContext());
+
+                //Shared Preference to get USER details
+                SharedPreferences pref = getSharedPreferences("User", MODE_PRIVATE);
                 SharedPreferences.Editor editor = pref.edit();
-                String storedUsername =     pref.getString("username",null);
-                String storedemail =     pref.getString("email",null);
-                String storedAdmin =  pref.getString("admin",null);
-                String storedTotal = pref.getString("total",null);
-                String storeduid = pref.getString("uid",null);
+                String storedUsername = pref.getString("username", null);
+                String storedemail = pref.getString("email", null);
+                String storedAdmin = pref.getString("admin", null);
+                String storedTotal = pref.getString("total", null);
+                String storeduid = pref.getString("uid", null);
 
+                //Updating the endTime regularly.
+                endTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
 
-                //While our broadcast receiver is true
-                while (connected){
+                //To check if previous session exists
 
-                    try {
-                        //Notification Manager
-                        Intent notificationIntent = new Intent(getApplicationContext(),HomeFragment.class);
-                        PendingIntent pendingIntent =  PendingIntent.getActivity(getApplicationContext(),
-                                0, notificationIntent, 0);
+                //1. First we get the end time of the previous session
+                SharedPreferences preferencesSession = getSharedPreferences("Session", MODE_PRIVATE);
+                SharedPreferences.Editor editorSession = preferencesSession.edit();
+                Long storedLastTime = preferencesSession.getLong("time",0);
 
-                        Integer minutes = Math.round(count/60);
-                        Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
-                                .setContentTitle("Active Session")
-                                .setContentText("Current session time: " +minutes+" minutes "+count%60+" seconds")
-                                .setOnlyAlertOnce(true)
-                                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
-                                .setContentIntent(pendingIntent)
-                                .build();
+                //If previous session exists
+                if(System.currentTimeMillis()<20*60*1000+storedLastTime){
 
-                        startForeground(1,notification);
+                    String sessionID = preferencesSession.getString("uid",null);
+                    String storedSessionStartTime = preferencesSession.getString("start",null);
 
-                        //Updating the endTime regularly if in case OnDestroy not called.
-                        endTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
+                    //FireBase Update (End-Time & Total Time) Only
+                    timeSpent = (System.currentTimeMillis()-storedLastTime)/1000;
+                    attendanceSession = new AttendanceSession(storedSessionStartTime,endTime,String.valueOf(timeSpent));
 
-                        //FireBase Update (End-Time & Total Time) Only
-                        AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Long.toString(count));
-                        if(sessionID != null) {
+                    Log.d(TAG,"Updating "+sessionID);
+                    //Marking the User as online & updating total time
+                    total = Long.valueOf(storedTotal)+timeSpent;
+                    editor.putString("total", String.valueOf(total));
+                    editor.apply();
+                    activeUser = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
 
-                            //Marking the User as online & updating total time
-                            Long total = count+Integer.valueOf(storedTotal);
-                            editor.putString("total",String.valueOf(total));
-                            editor.apply();
-                            User activeUser = new User(storedemail,storedUsername,storedAdmin,"1",String.valueOf(total),storeduid);
-                            if (count % 11 == 0) {
-                                //Updating the session
-                                databaseReferenceSession
-                                        .child(sessionID)
-                                        .setValue(attendanceSession)
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if(task.isSuccessful())
-                                                    Log.d("Info","Successful");
-                                            }
-                                        });
-                                databaseReferenceUser.setValue(activeUser).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    //Common FB code for both cases
+                    if(sessionID != null) {
+
+                        //Updating the session
+                        databaseReferenceSession
+                                .child(sessionID)
+                                .setValue(attendanceSession)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
-                                        if(task.isSuccessful())
-                                            Log.d("Info","Successful");
+                                        if (task.isSuccessful())
+                                            Log.d(TAG, "FireBase: Session Update Successful");
                                     }
-                                });;
+                                });
+
+                        //Making user Online
+                        databaseReferenceUser.setValue(activeUser).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful())
+                                    Log.d(TAG, "FireBase: User Status Update Successful");
                             }
-                        }
+                        });
 
-                        //Thread sleeps for 1 second so that is equal to 1s of actual time spent
-                        Thread.sleep(1000);
-                        count+=1;
 
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        //Sending Notification
+                        Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
+                                .setContentTitle("Active Session")
+                                .setContentText("Session Time: "+timeSpent+" seconds")
+                                .setOnlyAlertOnce(true)
+                                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                                .build();
+                        notificationManager.notify(1,notification);
+                        Log.d(TAG,"Notification Sent");
                     }
 
                 }
 
-                //Code when Wi-Fi gets disconnected (i.e. connection=false)
-                //Notification Manager
-                NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+                //If previous session doesn't exist
+                else{
 
-                Integer minutes = Math.round(count/60);
-                Notification finalNotification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
-                        .setContentTitle("Session Ended")
-                        .setContentText("Total session time: " +minutes+" minutes "+count%60+" seconds")
-                        .setSmallIcon(R.drawable.ic_wifi_black_24dp)
-                        .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
-                        .build();
+                    //Generation of new UID for Session
+                    sessionID = databaseReferenceSession.push().getKey();
+                    Log.d(TAG,"Generating "+sessionID);
 
-                notificationManagerCompat.notify(1,finalNotification);
-                try {
-                } catch(IllegalArgumentException e) {
-                    e.printStackTrace();
+                    //Shared Preference to get SESSION details
+                    editorSession.putString("uid",sessionID);
+                    editorSession.putString("start",endTime);
+                    editorSession.putString("end",endTime);
+                    editorSession.putLong("time",System.currentTimeMillis());
+                    editorSession.putLong("totaltime",0);
+                    editorSession.apply();
+
+                    //FireBase Update (End-Time & Total Time) Only
+                    attendanceSession = new AttendanceSession(endTime,endTime,"0");
+
+                    //Marking the User as online & updating total time
+                    total = Long.valueOf(storedTotal);
+                    editor.putString("total", String.valueOf(total));
+                    editor.apply();
+
+                    activeUser = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
+                    //Common FB code for both cases
+                    if(sessionID != null) {
+
+                        //Updating the session
+                        databaseReferenceSession
+                                .child(sessionID)
+                                .setValue(attendanceSession)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful())
+                                            Log.d(TAG, "FireBase: Session Update Successful");
+                                    }
+                                });
+
+                        //Making user Online
+                        databaseReferenceUser.setValue(activeUser).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful())
+                                    Log.d(TAG, "FireBase: User Status Update Successful");
+                            }
+                        });
+
+
+                        //Sending Notification
+                        Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
+                                .setContentTitle("Active Session")
+                                .setContentText("Session Time: "+timeSpent+" seconds")
+                                .setOnlyAlertOnce(true)
+                                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                                .build();
+                        notificationManager.notify(1,notification);
+                        Log.d(TAG,"Notification Sent");
+                    }
                 }
-
-                //FireBase
-                AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Long.toString(count));
-                if(sessionID != null)
-                    databaseReferenceSession.child(sessionID).setValue(attendanceSession);
-                sessionID=null;
-
-                //Marking the User as offline & updating scores
-                String storedTotalUpdated = pref.getString("total",null);
-                User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotalUpdated,storeduid);
-                databaseReferenceUser.setValue(activeUser);
-
             }
         }).start();
+
         //When Job is Finished
         jobFinished(params,true);
         Log.d(TAG,"Job Finished");
@@ -187,46 +228,10 @@ public class AttendanceJobScheduler extends JobService {
     @Override
     public boolean onStopJob(JobParameters params) {
         Log.d(TAG,"Job cancelled before completion");
-        endTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-
-        //FireBase Database
-        databaseReferenceSession = FirebaseDatabase.getInstance()
-                .getReference("Sessions")
-                .child(FirebaseAuth.getInstance().getUid());
-
-        //Code when Wi-Fi gets disconnected
-
-        //Final Notification Generator
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
-        Integer minutes = Math.round(count/60);
-        Notification finalNotification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
-                .setContentTitle("Session Ended")
-                .setContentText("Total time: " +minutes+" minutes "+count%60+" seconds")
-                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
-                .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
-                .build();
-        notificationManagerCompat.notify(1,finalNotification);
-        //FireBase
-        AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Double.toString(count));
-        databaseReferenceSession.child(sessionID).setValue(attendanceSession);
-        sessionID=null;
-
-        //Shared Preference to get other details
-        SharedPreferences pref = getSharedPreferences("User",MODE_PRIVATE);
-        String storedUsername =     pref.getString("username",null);
-        String storedemail =     pref.getString("email",null);
-        String storedAdmin =  pref.getString("admin",null);
-        String storedTotal = pref.getString("total",null);
-        String storeduid = pref.getString("uid",null);
-
-        //Marking the User as offline & updating scores
-        User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal,storeduid);
-        databaseReferenceUser.setValue(activeUser);
         return true;
     }
 
-
-    //If scan successful
+    //WiFi scan for BSSID
     private void wifiScan() {
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         List<ScanResult> results = wifiManager.getScanResults();
@@ -250,4 +255,3 @@ public class AttendanceJobScheduler extends JobService {
             results.remove(position);
     }
 }
-
