@@ -1,27 +1,18 @@
 package com.example.dtlattendance;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
-import android.content.BroadcastReceiver;
+import android.app.job.JobParameters;
+import android.app.job.JobService;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.location.LocationManager;
-import android.net.wifi.WifiInfo;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.os.Build;
-import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
-import android.widget.ListView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -31,65 +22,40 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.DateFormat;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.List;
 
 import static com.example.dtlattendance.App.Channel_ID;
 
-public class WifiService extends Service {
+public class AttendanceJobScheduler extends JobService {
 
     //Declarations
     private long count=0;
     private String startTime, endTime,sessionID;
     private boolean connected=true;
+    private static final String targetBSSID = "02:15:b2:00:01:00";
+    //private static final String targetBSSID = "00:23:68:17:65:d0";
+    private boolean isTargetBSSID_InRange = false;
 
     //FireBase
     DatabaseReference databaseReferenceSession,databaseReferenceUser;
 
+    private static final String TAG = "AttendanceJobScheduler";
     @Override
-    public void onDestroy() {
-        endTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-
-        //FireBase Database
-        databaseReferenceSession = FirebaseDatabase.getInstance()
-                .getReference("Sessions")
-                .child(FirebaseAuth.getInstance().getUid());
-
-        //Code when Wi-Fi gets disconnected
-
-        //Final Notification Generator
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
-        Integer minutes = Math.round(count/60);
-        Notification finalNotification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
-                .setContentTitle("Session Ended")
-                .setContentText("Total time: " +minutes+" minutes "+count%60+" seconds")
-                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
-                .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
-                .build();
-        notificationManagerCompat.notify(1,finalNotification);
-        //FireBase
-        AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Double.toString(count));
-        databaseReferenceSession.child(sessionID).setValue(attendanceSession);
-        sessionID=null;
-
-        //Shared Preference to get other details
-        SharedPreferences pref = getSharedPreferences("User",MODE_PRIVATE);
-        String storedUsername =     pref.getString("username",null);
-        String storedemail =     pref.getString("email",null);
-        String storedAdmin =  pref.getString("admin",null);
-        String storedTotal = pref.getString("total",null);
-        String storeduid = pref.getString("uid",null);
-
-        //Marking the User as offline & updating scores
-        User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal,storeduid);
-        databaseReferenceUser.setValue(activeUser);
-
-        stopSelf();
-        super.onDestroy();
+    public boolean onStartJob(JobParameters params) {
+        wifiScan();
+        Log.d(TAG,"Job Started");
+        if(isTargetBSSID_InRange){
+            startMarkingAttendance(params);
+            Log.d(TAG,"Target BSSID in Range");
+            return true;
+        }
+        else {
+            Log.d(TAG, "Target BSSID NOT in range");
+            return false;
+        }
     }
 
-    @Override
-    public int onStartCommand(final Intent intent, int flags, int startId) {
-
+    public void startMarkingAttendance(JobParameters params){
         //We shouldn't run a service on the main thread.
         new Thread(new Runnable() {
             @Override
@@ -156,12 +122,12 @@ public class WifiService extends Service {
                                         .child(sessionID)
                                         .setValue(attendanceSession)
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if(task.isSuccessful())
-                                            Log.d("Info","Successful");
-                                    }
-                                });
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if(task.isSuccessful())
+                                                    Log.d("Info","Successful");
+                                            }
+                                        });
                                 databaseReferenceUser.setValue(activeUser).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
@@ -211,23 +177,77 @@ public class WifiService extends Service {
                 User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotalUpdated,storeduid);
                 databaseReferenceUser.setValue(activeUser);
 
-                //Stop Self
-                stopSelf();
             }
         }).start();
-        return START_REDELIVER_INTENT;
+        //When Job is Finished
+        jobFinished(params,true);
+        Log.d(TAG,"Job Finished");
     }
 
-    //When the service gets created
     @Override
-    public void onCreate() {
-        startTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-        super.onCreate();
+    public boolean onStopJob(JobParameters params) {
+        Log.d(TAG,"Job cancelled before completion");
+        endTime = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
+
+        //FireBase Database
+        databaseReferenceSession = FirebaseDatabase.getInstance()
+                .getReference("Sessions")
+                .child(FirebaseAuth.getInstance().getUid());
+
+        //Code when Wi-Fi gets disconnected
+
+        //Final Notification Generator
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+        Integer minutes = Math.round(count/60);
+        Notification finalNotification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
+                .setContentTitle("Session Ended")
+                .setContentText("Total time: " +minutes+" minutes "+count%60+" seconds")
+                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
+                .build();
+        notificationManagerCompat.notify(1,finalNotification);
+        //FireBase
+        AttendanceSession attendanceSession = new AttendanceSession(startTime,endTime,Double.toString(count));
+        databaseReferenceSession.child(sessionID).setValue(attendanceSession);
+        sessionID=null;
+
+        //Shared Preference to get other details
+        SharedPreferences pref = getSharedPreferences("User",MODE_PRIVATE);
+        String storedUsername =     pref.getString("username",null);
+        String storedemail =     pref.getString("email",null);
+        String storedAdmin =  pref.getString("admin",null);
+        String storedTotal = pref.getString("total",null);
+        String storeduid = pref.getString("uid",null);
+
+        //Marking the User as offline & updating scores
+        User activeUser = new User(storedemail,storedUsername,storedAdmin,"0",storedTotal,storeduid);
+        databaseReferenceUser.setValue(activeUser);
+        return true;
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+
+    //If scan successful
+    private void wifiScan() {
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        List<ScanResult> results = wifiManager.getScanResults();
+        int position=-1;
+
+        if(results.size()==0)
+            Log.d("WiFi Scan Result","No connection found in range");
+
+        for (int i = 0; i < results.size(); i++) {
+            String SSID = results.get(i).SSID;
+            String BSSID = results.get(i).BSSID;
+            Log.d("WiFi Scan Result",i+". "+SSID+": "+BSSID);
+
+            if (BSSID.toLowerCase().equals(targetBSSID.toLowerCase())) {
+                isTargetBSSID_InRange = true;
+                position=i;
+            }
+        }
+        //Removes the selected SSID
+        if(position!=-1)
+            results.remove(position);
     }
 }
+
