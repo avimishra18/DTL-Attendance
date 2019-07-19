@@ -2,14 +2,18 @@ package com.example.dtlattendance;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class HistoryList extends ArrayAdapter<AttendanceSession> {
 
@@ -33,30 +37,46 @@ public class HistoryList extends ArrayAdapter<AttendanceSession> {
         TextView textViewTotalTime = listViewItem.findViewById(R.id.textViewTotalTime);
         ProgressBar circularProgressBar = listViewItem.findViewById(R.id.circularProgressBar);
 
+        String inTime="",outTime="";
+
         AttendanceSession attendanceSession = historyList.get(position);
-        if(attendanceSession.getStartDate().length()>12) {
-            String date = attendanceSession.startDate.substring(0, 12);
-            String inTime = attendanceSession.startDate.substring(13);
-            String outTime = attendanceSession.endDate.substring(13);
+        if(attendanceSession.getStartTimeStamp()>1000000) {
+            String date = getDate(attendanceSession.getStartTimeStamp());
+            inTime = getTime(attendanceSession.startTimeStamp);
+            outTime = getTime(attendanceSession.endTimeStamp);
             textViewDate.setText(date);
             textViewInTime.setText("From " + inTime + " to " + outTime);
         }
-        //textViewInTime.setText("In: " + attendanceSession.getStartDate());
-        //textViewDate.setText("Out: " + attendanceSession.getEndDate());
 
-        if(!attendanceSession.getTime().isEmpty()) {
-            Float seconds = Float.valueOf(attendanceSession.getTime());
-            Integer minutes = Math.round(seconds / 60);
+        if(!outTime.isEmpty() || !inTime.isEmpty()) {
+            Integer minutes = Math.round(attendanceSession.getTotalTime()/60000);
             textViewTotalTime.setText("" + minutes);
             circularProgressBar.setProgress(100);
         }
         else{
-            textViewInTime.setText(attendanceSession.getStartDate());
-            textViewDate.setText(attendanceSession.getEndDate());
+            textViewInTime.setText(String.valueOf(attendanceSession.getStartTimeStamp()));
+            textViewDate.setText(String.valueOf(attendanceSession.getEndTimeStamp()));
             circularProgressBar.setVisibility(View.GONE);
             textViewTotalTime.setText("");
         }
 
+        //For Online
+
         return listViewItem;
+    }
+
+    //TimeStamp to Date & Time converter
+    private String getDate(Long input) {
+        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+        cal.setTimeInMillis(input);
+        String date = DateFormat.format("EEE, dd-MM-yyyy", cal).toString();
+        return date;
+    }
+
+    private String getTime(Long input) {
+        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+        cal.setTimeInMillis(input);
+        String date = DateFormat.format("hh:mm:ss", cal).toString();
+        return date;
     }
 }

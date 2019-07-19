@@ -1,38 +1,38 @@
 package com.example.dtlattendance;
 
 public class AttendanceSession {
-    String startDate,endDate,time;
+    Long startTimeStamp, endTimeStamp,totalTime;
 
     public AttendanceSession() {
     }
 
-    public AttendanceSession(String startDate, String endDate, String time) {
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.time = time;
+    public AttendanceSession(Long startTimeStamp, Long endTimeStamp) {
+        this.startTimeStamp = startTimeStamp;
+        this.endTimeStamp = endTimeStamp;
+        this.totalTime = endTimeStamp-startTimeStamp;
     }
 
-    public String getStartDate() {
-        return startDate;
+    public Long getStartTimeStamp() {
+        return startTimeStamp;
     }
 
-    public void setStartDate(String startDate) {
-        this.startDate = startDate;
+    public void setStartTimeStamp(Long startTimeStamp) {
+        this.startTimeStamp = startTimeStamp;
     }
 
-    public String getEndDate() {
-        return endDate;
+    public Long getEndTimeStamp() {
+        return endTimeStamp;
     }
 
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
+    public void setEndTimeStamp(Long endTimeStamp) {
+        this.endTimeStamp = endTimeStamp;
     }
 
-    public String getTime() {
-        return time;
+    public Long getTotalTime() {
+        return totalTime;
     }
 
-    public void setTime(String time) {
-        this.time = time;
+    public void setTotalTime(Long totalTime) {
+        this.totalTime = totalTime;
     }
 }

@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         android:scaleX="-1"
         android:alpha="0.85">
-        <!-- Header Toolbar of The App -->
+        <!-- Header Toolbar of The NotificationDTL -->
         <android.support.v7.widget.Toolbar
             android:id="@+id/bgHeaderHomeFragment"
             android:layout_width="match_parent"

@@ -31,6 +31,15 @@
                 android:layout_centerVertical="true"
                 android:src="@drawable/circle" />
 
+            <ImageView
+                android:id="@+id/onlineCircle"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="5dp"
+                android:src="@drawable/circle_online" />
+
             <TextView
                 android:id="@+id/textViewRank"
                 android:layout_width="wrap_content"

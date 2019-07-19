@@ -2,6 +2,7 @@ package com.example.dtlattendance;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.Notification;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
@@ -19,26 +20,34 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ToggleButton;
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
 import static android.content.Context.JOB_SCHEDULER_SERVICE;
 import static android.support.v4.content.PermissionChecker.checkSelfPermission;
+import static com.example.dtlattendance.NotificationDTL.Channel_ID;
+
 
 public class HomeFragment extends Fragment {
 
     //String of the WIFI BSSID
-    //private static final String targetBSSID = "00:23:68:17:65:d0";
-    private static final String targetBSSID = "02:15:b2:00:01:00";
+    private static final String targetBSSIDICT08 = "02:15:b4:00:00:00";
+    private static final String targetBSSID = "00:23:68:17:65:d0";
     private static final String TAG = "Home Fragment";
     private boolean isTargetBSSID_InRange = false;
     WifiManager wifiManager;
@@ -48,6 +57,7 @@ public class HomeFragment extends Fragment {
 
     public ToggleButton buttonStartSession;
     AnimationDrawable wifiAnimation;
+    long total =0L;
 
     @Nullable
     @Override
@@ -93,7 +103,7 @@ public class HomeFragment extends Fragment {
                 if (buttonStartSession.isChecked()) {
                     if (isLocationEnabled(getContext())) {
                         if (wifiManager.isWifiEnabled()) {
-                            if (!isMyServiceRunning(WifiService.class)&& isTargetBSSID_InRange) {
+                            if (!isMyServiceRunning(AttendanceJobScheduler.class)&& isTargetBSSID_InRange) {
                                 //Animation of the Wi-Fi Button
                                 buttonStartSession.setBackgroundResource(R.drawable.animation_wifi);
                                 wifiAnimation = (AnimationDrawable) buttonStartSession.getBackground();
@@ -126,15 +136,67 @@ public class HomeFragment extends Fragment {
         floatingActionButtonLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isMyServiceRunning(WifiService.class)) {
+                if (isMyServiceRunning(AttendanceJobScheduler.class)) {
                     buttonStartSession.setBackgroundResource(R.drawable.wifi_selector);
                     stopService();
                 }
+
+                //Shared Preference to get USER details
+                SharedPreferences pref = getActivity().getSharedPreferences("User",Context.MODE_PRIVATE);
+                final SharedPreferences.Editor editor = pref.edit();
+                final String storedUsername = pref.getString("username", null);
+                final String storedemail = pref.getString("email", null);
+                final String storedAdmin = pref.getString("admin", null);
+                final String storeduid = pref.getString("uid", null);
+
+                //Calculating Total Time
+                FirebaseDatabase.getInstance().getReference("Sessions")
+                        .child(storeduid)
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
+                                    AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                                    total += attendanceSession.getTotalTime();
+                                    editor.putString("total",String.valueOf(total));
+                                    User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
+
+                                    //Making user Online & Updating Total
+                                    databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful())
+                                                Log.d(TAG, "FireBase: User Status Update Successful");
+                                        }
+                                    });
+                                }
+                            }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Log.d(TAG, "FireBase: User Status Update Failed.");
+                            }
+                        });
+
+                User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
+
+                //Making user Online & Updating Total
+                databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful())
+                            Log.d(TAG, "FireBase: User Status Update Successful");
+                    }
+                });
+
                 //Clearing data from Shared Preference
-                SharedPreferences pref = getActivity().getSharedPreferences("User", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = pref.edit();
                 editor.clear();
-                editor.commit();
+                editor.apply();
+
+                SharedPreferences preferences = getActivity().getSharedPreferences("Sessions",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor1 = preferences.edit();
+                editor1.clear();
+                editor1.apply();
 
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(getActivity(), LoginActivity.class);
@@ -159,6 +221,10 @@ public class HomeFragment extends Fragment {
             Log.d("WiFi Scan Result",i+". "+SSID+": "+BSSID);
 
             if (BSSID.toLowerCase().equals(targetBSSID.toLowerCase())) {
+                isTargetBSSID_InRange = true;
+                position=i;
+            }
+            else if (BSSID.toLowerCase().equals(targetBSSIDICT08.toLowerCase())) {
                 isTargetBSSID_InRange = true;
                 position=i;
             }

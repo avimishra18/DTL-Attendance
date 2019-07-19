@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +43,8 @@ public class LeaderBoardList extends ArrayAdapter<User> {
         TextView textViewUserName = listViewItem.findViewById(R.id.textViewUserName);
         TextView textViewScore = listViewItem.findViewById(R.id.textViewScore);
         RoundCornerProgressBar progressBarCustom = listViewItem.findViewById(R.id.progressBarCustom);
+        ImageView onlineCircle = listViewItem.findViewById(R.id.onlineCircle);
+
 
         User user = leaderBoardList.get(position);
         textViewUserName.setText(user.getUsername());
@@ -79,7 +82,9 @@ public class LeaderBoardList extends ArrayAdapter<User> {
             textViewScore.setText(""+integerScore);
         }
 
-
+        //Setting user online
+        if(user.getOnline().equals("0"))
+            onlineCircle.setVisibility(View.GONE);
 
         return listViewItem;
     }

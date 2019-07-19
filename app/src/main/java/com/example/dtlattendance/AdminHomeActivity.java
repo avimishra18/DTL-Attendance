@@ -1,5 +1,6 @@
 package com.example.dtlattendance;
 
+import android.app.job.JobScheduler;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -112,20 +113,21 @@ public class AdminHomeActivity extends AppCompatActivity {
             }
         });
 
-
-
-
         //On click listener for log out
         floatingActionButtonLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mAuth.signOut();
+                JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+                scheduler.cancel(123);
 
                 //Clearing data from Shared Preference
                 SharedPreferences pref = getSharedPreferences("User",Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = pref.edit();
                 editor.clear();
                 editor.commit();
+
+
 
                 Intent intent = new Intent(AdminHomeActivity.this,LoginActivity.class);
                 startActivity(intent);

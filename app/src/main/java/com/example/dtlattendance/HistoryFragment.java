@@ -3,20 +3,17 @@ package com.example.dtlattendance;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.Legend;
@@ -25,9 +22,6 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -98,8 +92,8 @@ public class HistoryFragment extends Fragment {
                             for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
                                 AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
                                 attendanceSessionList.add(attendanceSession);
-                                float value = (float) Double.parseDouble(attendanceSession.getTime());
-                                value /= 60;
+                                float value = attendanceSession.getTotalTime();
+                                value/= 60;
                                 timeValues.add(value);
                             }
                             try {
@@ -107,6 +101,9 @@ public class HistoryFragment extends Fragment {
                                 if (!attendanceSessionList.isEmpty()) {
                                     listViewSession.setAdapter(adapter);
                                     setCharData();
+                                }
+                                if(attendanceSessionList.size()<2) {
+                                    cardViewSession.setVisibility(View.GONE);
                                 }
                             } catch (Exception e) {
                                 e.getMessage();
@@ -136,7 +133,7 @@ public class HistoryFragment extends Fragment {
                             for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
                                 AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
                                 attendanceSessionList.add(attendanceSession);
-                                float value = (float) Double.parseDouble(attendanceSession.getTime());
+                                float value = attendanceSession.getTotalTime();
                                 value /= 60;
                                 timeValues.add(value);
                             }
@@ -145,6 +142,9 @@ public class HistoryFragment extends Fragment {
                                 if (!attendanceSessionList.isEmpty()) {
                                     listViewSession.setAdapter(adapter);
                                     setCharData();
+                                }
+                                if(attendanceSessionList.size()<2) {
+                                    cardViewSession.setVisibility(View.GONE);
                                 }
                             } catch (Exception e) {
                                 e.getMessage();
@@ -157,8 +157,8 @@ public class HistoryFragment extends Fragment {
                         }
                     });
         }
-        AttendanceSession attendanceSession = new AttendanceSession("No Session", "Slow connection?", "");
-        attendanceSessionList.add(attendanceSession);
+        //AttendanceSession attendanceSession = new AttendanceSession("No Session", "Slow connection?");
+        //attendanceSessionList.add(attendanceSession);
         HistoryList adapter = new HistoryList(getActivity(), attendanceSessionList);
         listViewSession.setAdapter(adapter);
     }

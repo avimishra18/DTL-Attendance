@@ -5,17 +5,6 @@ import java.util.Comparator;
 public class User {
     public String admin,email,online,total,uid,username;
 
-    //Compare to method
-    public int compareTo(User compareUser) {
-        int total = Integer.valueOf(compareUser.getTotal());
-        int compareTotal=total;
-        /* For Ascending order*/
-        return total-compareTotal;
-
-        /* For Descending order do like this */
-        //return compareage-this.studentage;
-    }
-
     public static Comparator<User> userTotal = new Comparator<User>() {
 
         public int compare(User user1, User user2) {
@@ -23,8 +12,6 @@ public class User {
             int total1 = Integer.valueOf(user1.getTotal());
             int total2 = Integer.valueOf(user2.getTotal());
 
-            //For ascending order
-            //return total2-total1;
             //For descending order
             return total2-total1;
         }};
@@ -49,35 +36,6 @@ public class User {
         this.uid = uid;
         this.username = username;
     }
-
-    /*
-    public User(String email, String username, String admin, String online) {
-        this.email = email;
-        this.username = username;
-        this.admin = admin;
-        this.online = online;
-        this.total ="0";
-        this.uid=FirebaseAuth.getInstance().getUid();
-    }
-
-    public User(String email, String username) {
-        this.email = email;
-        this.username = username;
-        this.admin="0";
-        this.online="0";
-        this.total ="0";
-        this.uid=FirebaseAuth.getInstance().getUid();
-    }
-
-    public User(String email, String username, String admin, String online, String total) {
-        this.email = email;
-        this.username = username;
-        this.admin = admin;
-        this.online = online;
-        this.total = total;
-        this.uid=FirebaseAuth.getInstance().getUid();
-    }
-    */
 
     public String getUid() {
         return uid;
