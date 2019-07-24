@@ -16,10 +16,10 @@
 
         <!-- Image View Logo -->
         <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="175dp"
+            android:layout_height="175dp"
             android:layout_margin="20dp"
-            android:src="@mipmap/ic_launcher"
+            android:src="@mipmap/ic_launcher_foreground"
             android:layout_centerInParent="true"/>
 
     </RelativeLayout>
@@ -43,7 +43,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="220dp"
                 android:background="@drawable/header_login"
-                android:scaleX="-1"
                 android:elevation="5dp" />
             <!-- Various Circle UI in the program -->
             <ImageView
@@ -86,23 +85,38 @@
 
         <!-- Image View Logo -->
         <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_margin="20dp"
-            android:src="@mipmap/ic_launcher"/>
+            android:id="@+id/loginLogo"
+            android:layout_width="175dp"
+            android:layout_height="175dp"
+            android:layout_marginLeft="-30dp"
+            android:layout_marginTop="-30dp"
+            android:src="@mipmap/ic_launcher_foreground"/>
 
-        <!-- Text View Header
         <TextView
+            android:id="@+id/loginHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="LOGIN"
-            android:textColor="@color/colorWhite"
-            android:fontFamily="monospace"
+            android:layout_toRightOf="@+id/loginLogo"
+            android:text="DESIGN THINKING LAB"
+            android:layout_marginTop="35dp"
+            android:layout_marginLeft="-30dp"
             android:textStyle="bold"
-            android:textSize="25dp"
-            android:layout_alignParentEnd="true"
-            android:layout_margin="20dp"/>
-        -->
+            android:textSize="20dp"
+            android:fontFamily="@font/proxima_nova_bold"
+            android:textColor="@color/colorWhite"
+            />
+        <TextView
+            android:id="@+id/loginTagLine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/loginLogo"
+            android:layout_below="@id/loginHeader"
+            android:text="Ideate. Innovate. Inspire."
+            android:layout_marginLeft="-30dp"
+            android:textSize="16dp"
+            android:fontFamily="@font/proxima_nova_bold"
+            android:textColor="@color/colorWhite"
+            />
         <!-- Scroll View for main UI in the program -->
         <ScrollView
             android:id="@+id/scrollViewLogin"

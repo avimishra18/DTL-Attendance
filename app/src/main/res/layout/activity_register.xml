@@ -62,11 +62,39 @@
 
     <!-- Image Logo -->
     <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="20dp"
-        android:src="@mipmap/ic_launcher"/>
+        android:id="@+id/registerLogo"
+        android:layout_width="175dp"
+        android:layout_height="175dp"
+        android:layout_marginLeft="-30dp"
+        android:layout_marginTop="-30dp"
+        android:src="@mipmap/ic_launcher_foreground"/>
+
+    <TextView
+        android:id="@+id/registerHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/registerLogo"
+        android:text="DESIGN THINKING LAB"
+        android:layout_marginTop="35dp"
+        android:layout_marginLeft="-30dp"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:fontFamily="@font/proxima_nova_bold"
+        android:textColor="@color/colorWhite"
+        />
+    <TextView
+        android:id="@+id/registerTagLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/registerLogo"
+        android:layout_below="@id/registerHeader"
+        android:text="Ideate. Innovate. Inspire."
+        android:layout_marginLeft="-30dp"
+        android:textSize="16dp"
+        android:fontFamily="@font/proxima_nova_bold"
+        android:textColor="@color/colorWhite"
+        />
+
 
     <!-- Text View Header
     <TextView

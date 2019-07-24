@@ -28,13 +28,13 @@ import static com.example.dtlattendance.NotificationDTL.Channel_ID;
 public class AttendanceJobScheduler extends JobService {
 
     //Declarations
-    private String startTime,endTime,sessionID;
+    private String startTime,endTime;
     private boolean isTargetBSSID_InRange = false;
     private long total;
     private NotificationManagerCompat notificationManager;
 
-    private static final String targetBSSID = "02:15:b4:00:01:00";
-    private static final String targetBSSIDICT08 = "00:23:68:17:65:d0";
+    private static final String targetBSSID = "02:15:b2:00:01:00";
+    private static final String targetBSSIDDTL = "f8:1a:67:97:a5:8e";
 
     //FireBase
     DatabaseReference databaseReferenceSession,databaseReferenceUser;
@@ -42,33 +42,27 @@ public class AttendanceJobScheduler extends JobService {
     private static final String TAG = "AttendanceJobScheduler";
     @Override
     public boolean onStartJob(JobParameters params) {
+        Log.d(TAG, "Job Started");
+
         WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-        int wifi = 1;
         if (!wifiManager.isWifiEnabled()) {
-            Log.d(TAG, "Wifi not enabled.");
-            wifiScan();
+            Log.d(TAG, "Wifi not enabled. Trying to switch on WiFi.");
             wifiManager.setWifiEnabled(true);
-            wifi = 0;
         }
         wifiScan();
 
-        Log.d(TAG, "Job Started");
-        if(wifi == 0){
-            wifiManager.setWifiEnabled(false);
-        }
         if (FirebaseAuth.getInstance().getUid() == null) {
             jobFinished(params, true);
-            Log.d(TAG, "Job Finished: User Logged Out");
-
+            Log.d(TAG, "Job Finished: User has logged out.");
             return false;
         }
         else if (isTargetBSSID_InRange) {
             startMarkingAttendance(params);
-            Log.d(TAG, "Target BSSID in Range");
+            Log.d(TAG, "Target BSSID in Range -> Marking Attendance");
             return true;
         }
         else {
-            Log.d(TAG, "Target BSSID NOT in range");
+            Log.d(TAG, "Target BSSID NOT in range -> Marking User Offline");
             makeUserOffline(params);
             return false;
         }
@@ -80,40 +74,87 @@ public class AttendanceJobScheduler extends JobService {
                 .getReference("Users")
                 .child(FirebaseAuth.getInstance().getUid());
 
-        //Shared Preference to get USER details
+
         SharedPreferences pref = getSharedPreferences("User", MODE_PRIVATE);
-        String storedUsername = pref.getString("username", null);
-        String storedemail = pref.getString("email", null);
-        String storedAdmin = pref.getString("admin", null);
-        String storedTotal = pref.getString("total", null);
         String storeduid = pref.getString("uid", null);
 
+        //Calculating Total Time
+        FirebaseDatabase.getInstance().getReference("Sessions")
+                .child(storeduid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        AttendanceSession attendanceSession;
+                        for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
+                            attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                            total += attendanceSession.getTotalTime();
+                        }
+                        //Shared Preference to get USER details
+                        SharedPreferences pref = getSharedPreferences("User", MODE_PRIVATE);
+                        String storedUsername = pref.getString("username", null);
+                        String storedemail = pref.getString("email", null);
+                        String storedAdmin = pref.getString("admin", null);
+                        String storeduid = pref.getString("uid", null);
+
+                        User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "0", String.valueOf(total), storeduid);
+
+                        //Making user Online & Updating Total
+                        databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful())
+                                    Log.d(TAG, "FireBase: User Status Update Successful");
+                            }
+                        });
+
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Log.d(TAG, "FireBase: User Status Update Failed.");
+                    }
+                });
+
+        /*
         if(!storeduid.isEmpty()){
 
             User offlineUser = new User(storedemail, storedUsername, storedAdmin, "0", String.valueOf(storedTotal), storeduid);
             //Making user Online
+            Log.d(TAG,"Stored Total = "+total);
             databaseReferenceUser.setValue(offlineUser).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful())
-                        Log.d(TAG, "FireBase: User Status Update Successful");
+                        Log.d(TAG, "FireBase: User Offline Update Successful");
+                    else if (!task.isSuccessful())
+                            Log.d(TAG,"FireBase: User Status Update Failed.");
                 }
             });
         }
+        */
 
         //Notification Manager
         notificationManager = NotificationManagerCompat.from(getApplicationContext());
 
         //Sending Notification
-        Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
-                .setContentTitle("Attendance not marked.")
-                .setContentText("Make sure wifi,location is enabled.")
-                .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
-                .build();
-        notificationManager.notify(1,notification);
-        Log.d(TAG,"Notification Sent");
+        SharedPreferences preferencesNotification = getSharedPreferences("notification",MODE_PRIVATE);
+        SharedPreferences.Editor editorNotication = preferencesNotification.edit();
+        Integer flagNotification = preferencesNotification.getInt("flag",1);
+        if(flagNotification ==1)
+        {
+            Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
+                    .setContentTitle("Attendance not marked.")
+                    .setContentText("Make sure wifi and location is enabled.")
+                    .setOnlyAlertOnce(true)
+                    .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                    .build();
 
+            notificationManager.notify(1,notification);
+            Log.d(TAG,"Notification Sent");
+
+            editorNotication.putInt("flag",0);
+            editorNotication.apply();
+        }
 
         //When Job is Finished
         jobFinished(params,true);
@@ -143,6 +184,12 @@ public class AttendanceJobScheduler extends JobService {
 
                 //Notification Manager
                 notificationManager = NotificationManagerCompat.from(getApplicationContext());
+
+                //Shared Preference for Notification
+                SharedPreferences preferencesNotification = getSharedPreferences("notification",MODE_PRIVATE);
+                SharedPreferences.Editor editorNotication = preferencesNotification.edit();
+                editorNotication.putInt("flag",0);
+                editorNotication.apply();
 
                 //Shared Preference to get USER details
                 SharedPreferences pref = getSharedPreferences("User", MODE_PRIVATE);
@@ -197,9 +244,11 @@ public class AttendanceJobScheduler extends JobService {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                                        AttendanceSession attendanceSession;
                                         for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
-                                            AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                                            attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
                                             total += attendanceSession.getTotalTime();
+                                        }
                                             editor.putString("total",String.valueOf(total));
                                             User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
 
@@ -212,7 +261,7 @@ public class AttendanceJobScheduler extends JobService {
                                                 }
                                             });
 
-                                            int timeSpent = Math.round(attendanceSession.totalTime/60000);
+                                            int timeSpent = Math.round(total/60000);
                                             //Sending Notification
                                             Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
                                                     .setContentTitle("Active Session")
@@ -222,7 +271,7 @@ public class AttendanceJobScheduler extends JobService {
                                                     .build();
                                             notificationManager.notify(1,notification);
                                             Log.d(TAG,"Notification Sent");
-                                        }
+
                                     }
                                     @Override
                                     public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -272,6 +321,17 @@ public class AttendanceJobScheduler extends JobService {
                                                     Log.d(TAG, "FireBase: User Status Update Successful");
                                             }
                                         });
+
+                                        //Sending Notification
+                                        Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
+                                                .setContentTitle("Active Session")
+                                                .setContentText("Attendance is getting marked.")
+                                                .setOnlyAlertOnce(true)
+                                                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                                                .build();
+                                        notificationManager.notify(1,notification);
+                                        Log.d(TAG,"Notification Sent");
+
                                     }
                                 }
                                 @Override
@@ -295,16 +355,6 @@ public class AttendanceJobScheduler extends JobService {
                                         Log.d(TAG, "FireBase: Session Update Successful");
                                 }
                             });
-
-                    //Sending Notification
-                    Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
-                            .setContentTitle("Active Session")
-                            .setContentText("Session Time: "+timeSpent+" second")
-                            .setOnlyAlertOnce(true)
-                            .setSmallIcon(R.drawable.ic_wifi_black_24dp)
-                            .build();
-                    notificationManager.notify(1,notification);
-                    Log.d(TAG,"Notification Sent");
                 }
             }
         }).start();
@@ -327,18 +377,18 @@ public class AttendanceJobScheduler extends JobService {
         int position=-1;
 
         if(results.size()==0)
-            Log.d("WiFi Scan Result","No connection found in range");
+            Log.d(TAG,"No connection found in range");
 
         for (int i = 0; i < results.size(); i++) {
             String SSID = results.get(i).SSID;
             String BSSID = results.get(i).BSSID;
-            Log.d("WiFi Scan Result",i+". "+SSID+": "+BSSID);
+            Log.d(TAG,i+". "+SSID+": "+BSSID);
 
             if (BSSID.toLowerCase().equals(targetBSSID.toLowerCase())) {
                 isTargetBSSID_InRange = true;
                 position=i;
             }
-            else if (BSSID.toLowerCase().equals(targetBSSIDICT08.toLowerCase())) {
+            else if (BSSID.toLowerCase().equals(targetBSSIDDTL.toLowerCase())) {
                 isTargetBSSID_InRange = true;
                 position=i;
             }

@@ -83,8 +83,8 @@ public class LeaderBoardList extends ArrayAdapter<User> {
         }
 
         //Setting user online
-        if(user.getOnline().equals("0"))
-            onlineCircle.setVisibility(View.GONE);
+        if(user.getOnline().equals("1"))
+            onlineCircle.setVisibility(View.VISIBLE);
 
         return listViewItem;
     }

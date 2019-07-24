@@ -2,7 +2,6 @@ package com.example.dtlattendance;
 
 import android.Manifest;
 import android.app.ActivityManager;
-import android.app.Notification;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
@@ -20,7 +19,6 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,14 +38,14 @@ import java.util.List;
 
 import static android.content.Context.JOB_SCHEDULER_SERVICE;
 import static android.support.v4.content.PermissionChecker.checkSelfPermission;
-import static com.example.dtlattendance.NotificationDTL.Channel_ID;
 
 
 public class HomeFragment extends Fragment {
 
     //String of the WIFI BSSID
-    private static final String targetBSSIDICT08 = "02:15:b4:00:00:00";
-    private static final String targetBSSID = "00:23:68:17:65:d0";
+    private static final String targetBSSIDDTL = "f8:1a:67:97:a5:8e";
+    //private static final String targetBSSID = "00:23:68:17:65:d0";
+    private static final String targetBSSID = "02:15:b2:00:01:00";
     private static final String TAG = "Home Fragment";
     private boolean isTargetBSSID_InRange = false;
     WifiManager wifiManager;
@@ -159,10 +157,17 @@ public class HomeFragment extends Fragment {
                                 for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
                                     AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
                                     total += attendanceSession.getTotalTime();
+                                }
                                     editor.putString("total",String.valueOf(total));
-                                    User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
+                                    User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "0", String.valueOf(total), storeduid);
+
+                                    if(FirebaseAuth.getInstance().getUid()!=null)
+                                    databaseReferenceUser = FirebaseDatabase.getInstance()
+                                            .getReference("Users")
+                                            .child(FirebaseAuth.getInstance().getUid());
 
                                     //Making user Online & Updating Total
+                                    if(FirebaseAuth.getInstance().getUid()!=null)
                                     databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
@@ -170,7 +175,6 @@ public class HomeFragment extends Fragment {
                                                 Log.d(TAG, "FireBase: User Status Update Successful");
                                         }
                                     });
-                                }
                             }
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -181,6 +185,7 @@ public class HomeFragment extends Fragment {
                 User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
 
                 //Making user Online & Updating Total
+                if(databaseReferenceUser!=null)
                 databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -213,19 +218,21 @@ public class HomeFragment extends Fragment {
         int position=-1;
 
         if(results.size()==0)
-            Log.d("WiFi Scan Result","No connection found in range");
+            Log.d(TAG,"No connection found in range");
 
         for (int i = 0; i < results.size(); i++) {
             String SSID = results.get(i).SSID;
             String BSSID = results.get(i).BSSID;
-            Log.d("WiFi Scan Result",i+". "+SSID+": "+BSSID);
+            Log.d(TAG,i+". "+SSID+": "+BSSID);
 
             if (BSSID.toLowerCase().equals(targetBSSID.toLowerCase())) {
                 isTargetBSSID_InRange = true;
                 position=i;
+                Log.d(TAG,"Connection found in range");
             }
-            else if (BSSID.toLowerCase().equals(targetBSSIDICT08.toLowerCase())) {
+            else if (BSSID.toLowerCase().equals(targetBSSIDDTL.toLowerCase())) {
                 isTargetBSSID_InRange = true;
+                Log.d(TAG,"Connection found in range");
                 position=i;
             }
         }
