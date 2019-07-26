@@ -93,7 +93,7 @@ public class HistoryFragment extends Fragment {
                                 AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
                                 attendanceSessionList.add(attendanceSession);
                                 float value = attendanceSession.getTotalTime();
-                                value/= 60;
+                                value/= 60000;
                                 timeValues.add(value);
                             }
                             try {

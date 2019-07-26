@@ -34,7 +34,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Collections;
 import java.util.List;
 
 import static android.content.Context.JOB_SCHEDULER_SERVICE;
@@ -166,9 +165,58 @@ public class HomeFragment extends Fragment {
                         buttonStartSession.setChecked(false);
                         showDialog(0);
                     }
-                } else if (!buttonStartSession.isChecked()) {
+                }
+                //Marking User As Offline
+                else if (!buttonStartSession.isChecked())
+                {
                     buttonStartSession.setBackgroundResource(R.drawable.wifi_selector);
                     stopService();
+
+                    //Shared Preference to get USER details
+                    SharedPreferences pref = getActivity().getSharedPreferences("User",Context.MODE_PRIVATE);
+                    final SharedPreferences.Editor editor = pref.edit();
+                    final String storedUsername = pref.getString("username", null);
+                    final String storedemail = pref.getString("email", null);
+                    final String storedAdmin = pref.getString("admin", null);
+                    final String storeduid = pref.getString("uid", null);
+
+                    //Calculating Total Time
+                    FirebaseDatabase.getInstance().getReference("Sessions")
+                            .child(storeduid)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                    for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
+                                        AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                                        total += attendanceSession.getTotalTime();
+                                    }
+                                    Log.d(TAG,"Total 1 = "+total);
+                                    activeUserLogOut = new User(storedemail, storedUsername, storedAdmin, "0",String.valueOf(total), storeduid);
+
+
+                                    if(FirebaseAuth.getInstance().getUid()!=null)
+                                        databaseReferenceUser = FirebaseDatabase.getInstance()
+                                                .getReference("Users")
+                                                .child(FirebaseAuth.getInstance().getUid());
+
+                                    //Making user Online & Updating Total
+                                    if(FirebaseAuth.getInstance().getUid()!=null)
+                                        databaseReferenceUser.setValue(activeUserLogOut).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful())
+                                                    Log.d(TAG, "FireBase: User Status Update Successful.");
+                                                else
+                                                    Log.d(TAG,"FireBase: Update failed.");
+                                            }
+                                        });
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    Log.d(TAG, "FireBase: User Status Update Failed.");
+                                }
+                            });
                 }
             }
         });
