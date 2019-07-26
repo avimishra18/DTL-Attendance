@@ -81,6 +81,7 @@ public class HistoryFragment extends Fragment {
         SharedPreferences pref = getActivity().getSharedPreferences("User",Context.MODE_PRIVATE);
         String storedAdmin =  pref.getString("admin","0");
 
+        if(FirebaseAuth.getInstance().getUid()!=null)
         if(storedAdmin.equals("0")) {
             FirebaseDatabase.getInstance().getReference("Sessions")
                     .child(FirebaseAuth.getInstance().getUid())

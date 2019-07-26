@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -45,11 +46,12 @@ public class AttendanceJobScheduler extends JobService {
         Log.d(TAG, "Job Started");
 
         WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-        if (!wifiManager.isWifiEnabled()) {
-            Log.d(TAG, "Wifi not enabled. Trying to switch on WiFi.");
-            wifiManager.setWifiEnabled(true);
-        }
         wifiScan();
+        if (!wifiManager.isWifiEnabled()) {
+            wifiManager.setWifiEnabled(true);
+            Log.d(TAG, "Wifi not enabled. Trying to switch on WiFi.");
+            wifiScan();
+        }
 
         if (FirebaseAuth.getInstance().getUid() == null) {
             jobFinished(params, true);
@@ -59,12 +61,18 @@ public class AttendanceJobScheduler extends JobService {
         else if (isTargetBSSID_InRange) {
             startMarkingAttendance(params);
             Log.d(TAG, "Target BSSID in Range -> Marking Attendance");
+
+            //Setting Notificication Flag as 1
+            SharedPreferences preferencesNotification = getSharedPreferences("notification",MODE_PRIVATE);
+            SharedPreferences.Editor editorNotication = preferencesNotification.edit();
+            editorNotication.putInt("flag",1);
+            editorNotication.apply();
             return true;
         }
         else {
             Log.d(TAG, "Target BSSID NOT in range -> Marking User Offline");
             makeUserOffline(params);
-            return false;
+            return true;
         }
     }
 
@@ -140,7 +148,8 @@ public class AttendanceJobScheduler extends JobService {
         SharedPreferences preferencesNotification = getSharedPreferences("notification",MODE_PRIVATE);
         SharedPreferences.Editor editorNotication = preferencesNotification.edit();
         Integer flagNotification = preferencesNotification.getInt("flag",1);
-        if(flagNotification ==1)
+        Log.d(TAG,"Flag = "+flagNotification);
+        if(flagNotification == 1)
         {
             Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
                     .setContentTitle("Attendance not marked.")
@@ -151,7 +160,6 @@ public class AttendanceJobScheduler extends JobService {
 
             notificationManager.notify(1,notification);
             Log.d(TAG,"Notification Sent");
-
             editorNotication.putInt("flag",0);
             editorNotication.apply();
         }
@@ -169,7 +177,6 @@ public class AttendanceJobScheduler extends JobService {
             public void run() {
 
                 //Declerations
-                Long timeSpent=1L;
                 AttendanceSession attendanceSession;
 
                 //FireBase Session (Making folder in session by USER UID)
@@ -184,12 +191,6 @@ public class AttendanceJobScheduler extends JobService {
 
                 //Notification Manager
                 notificationManager = NotificationManagerCompat.from(getApplicationContext());
-
-                //Shared Preference for Notification
-                SharedPreferences preferencesNotification = getSharedPreferences("notification",MODE_PRIVATE);
-                SharedPreferences.Editor editorNotication = preferencesNotification.edit();
-                editorNotication.putInt("flag",0);
-                editorNotication.apply();
 
                 //Shared Preference to get USER details
                 SharedPreferences pref = getSharedPreferences("User", MODE_PRIVATE);
