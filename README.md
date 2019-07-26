@@ -4,6 +4,9 @@
 
 An attendance app which marks attendance when the specified wifi network is present in the wifi scan results. Connection to the wifi network is not mandatory for marking attendance. This app was initially made for Design & Thinking Lab at KIIT University. 
 
+## Using DTL-Attendancce
+
+
 ## Built With
 
 * [PhilJay](https://github.com/PhilJay/MPAndroidChart) - Bar Graph Library
