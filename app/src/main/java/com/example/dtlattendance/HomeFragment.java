@@ -34,6 +34,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Collections;
 import java.util.List;
 
 import static android.content.Context.JOB_SCHEDULER_SERVICE;
@@ -52,6 +53,7 @@ public class HomeFragment extends Fragment {
 
     //FireBase
     DatabaseReference databaseReferenceUser;
+    User activeUserLogOut;
 
     public ToggleButton buttonStartSession;
     AnimationDrawable wifiAnimation;
@@ -70,6 +72,46 @@ public class HomeFragment extends Fragment {
         //Initialization of Wifi Manager
         wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
+        //If user is online then only button is on
+        FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid())
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            User user = dataSnapshot.getValue(User.class);
+                            if(user.getOnline().equals("1")) {
+                                buttonStartSession.setChecked(true);
+                            }
+                            else{
+                                buttonStartSession.setChecked(false);
+                                Log.d(TAG,"Button Off. User is offline.");
+                                //Marking User as offline if service not running
+                                //Shared Preference to get other details
+                                /*
+                                SharedPreferences pref = getContext().getSharedPreferences("User", Context.MODE_PRIVATE);
+                                String storedUsername = pref.getString("username", null);
+                                String storedemail = pref.getString("email", null);
+                                String storedAdmin = pref.getString("admin", null);
+                                String storedTotal = pref.getString("total", null);
+                                String storedUid = pref.getString("uid", null);
+
+                                //Marking the User as offline
+                                User activeUser = new User(storedemail, storedUsername, storedAdmin, "0", storedTotal, storedUid);
+                                databaseReferenceUser = FirebaseDatabase.getInstance()
+                                        .getReference("Users")
+                                        .child(FirebaseAuth.getInstance().getUid());
+                                databaseReferenceUser.setValue(activeUser);
+                                */
+                            }
+                        }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Log.d(TAG,"Can't read whether user is online or offline.");
+
+                    }
+                });
+        /*
         //If Service is not running then button gets disabled
         if (isMyServiceRunning(AttendanceJobScheduler.class)) {
             buttonStartSession.setChecked(true);
@@ -90,7 +132,7 @@ public class HomeFragment extends Fragment {
                     .child(FirebaseAuth.getInstance().getUid());
             databaseReferenceUser.setValue(activeUser);
         }
-
+        */
         //Start WiFi Scan
         wifiScan();
 
@@ -134,6 +176,7 @@ public class HomeFragment extends Fragment {
         floatingActionButtonLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (isMyServiceRunning(AttendanceJobScheduler.class)) {
                     buttonStartSession.setBackgroundResource(R.drawable.wifi_selector);
                     stopService();
@@ -146,7 +189,6 @@ public class HomeFragment extends Fragment {
                 final String storedemail = pref.getString("email", null);
                 final String storedAdmin = pref.getString("admin", null);
                 final String storeduid = pref.getString("uid", null);
-
                 //Calculating Total Time
                 FirebaseDatabase.getInstance().getReference("Sessions")
                         .child(storeduid)
@@ -158,23 +200,42 @@ public class HomeFragment extends Fragment {
                                     AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
                                     total += attendanceSession.getTotalTime();
                                 }
-                                    editor.putString("total",String.valueOf(total));
-                                    User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "0", String.valueOf(total), storeduid);
+                                Log.d(TAG,"Total 1 = "+total);
+                                activeUserLogOut = new User(storedemail, storedUsername, storedAdmin, "0",String.valueOf(total), storeduid);
 
-                                    if(FirebaseAuth.getInstance().getUid()!=null)
+
+                                if(FirebaseAuth.getInstance().getUid()!=null)
                                     databaseReferenceUser = FirebaseDatabase.getInstance()
                                             .getReference("Users")
                                             .child(FirebaseAuth.getInstance().getUid());
 
-                                    //Making user Online & Updating Total
-                                    if(FirebaseAuth.getInstance().getUid()!=null)
-                                    databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                //Making user Online & Updating Total
+                                if(FirebaseAuth.getInstance().getUid()!=null)
+                                    databaseReferenceUser.setValue(activeUserLogOut).addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful())
-                                                Log.d(TAG, "FireBase: User Status Update Successful");
+                                                Log.d(TAG, "FireBase: User Status Update Successful.");
+                                            else
+                                                Log.d(TAG,"FireBase: Update failed.");
                                         }
                                     });
+
+                                //Clearing data from Shared Preference
+                                editor.clear();
+                                editor.apply();
+
+                                SharedPreferences preferences = getActivity().getSharedPreferences("Sessions",Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor1 = preferences.edit();
+                                editor1.clear();
+                                editor1.apply();
+
+                                FirebaseAuth.getInstance().signOut();
+                                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                                startActivity(intent);
+                                getActivity().finish();
+                                //editor.putString("total",String.valueOf(total));
+                                //editor.apply();
                             }
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -182,31 +243,9 @@ public class HomeFragment extends Fragment {
                             }
                         });
 
-                User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
-
-                //Making user Online & Updating Total
-                if(databaseReferenceUser!=null)
-                databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful())
-                            Log.d(TAG, "FireBase: User Status Update Successful");
-                    }
-                });
-
-                //Clearing data from Shared Preference
-                editor.clear();
-                editor.apply();
-
-                SharedPreferences preferences = getActivity().getSharedPreferences("Sessions",Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor1 = preferences.edit();
-                editor1.clear();
-                editor1.apply();
-
-                FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(getActivity(), LoginActivity.class);
-                startActivity(intent);
-                getActivity().finish();
+                //String storedTotal = pref.getString("total",null);
+                //Log.d(TAG,"Stored Total = "+storedTotal);
+                Log.d(TAG,"Total 2 = "+total);
             }
         });
         return view;
