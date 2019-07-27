@@ -2,11 +2,11 @@
 ![Platform](https://img.shields.io/badge/Platform-Android-blue.svg)
 ![Platform](https://img.shields.io/badge/BackEnd-FireBase-blue.svg)
 
-An android application which utilizes the BSSID of the specified network in background for real-time synchronization of attendance status of the an individual. The concerned authorities can monitor the real time presence of all the individual. This app has been customized for the Design & Thinking Lab at KIIT University. 
+An android application which utilizes the BSSID of the specified network in background for real-time synchronization of attendance status of the an individual. The concerned authorities can monitor the real time presence of all the individual. This app has been customized for the Design & Thinking Lab (DTL) of KIIT University. 
 
 ## Using DTL-Attendance
 
-The application allows the indivdiual to: 
+### The application allows the indivdiual to: 
 * Mark real-time attendance
 * Keep a track of all previous sessions
 * View the leaderboard
@@ -17,11 +17,9 @@ The application allows the indivdiual to:
   <img src="/screenshots/leader_board.png" width="270" height="585"/>
 </p>
 
-The application allows the organization to: 
+### The application allows the organization to: 
 * View all the individuals who are present in real time
 * Monitor session of all the individuals
-* View the leaderboard
-
 
 ## Built With
 
