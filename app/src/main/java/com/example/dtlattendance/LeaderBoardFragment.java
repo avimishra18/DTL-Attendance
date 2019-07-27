@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +31,7 @@ public class LeaderBoardFragment extends Fragment {
     //Declarations
     List<User> leaderBoardList;
     ListView leaderBoardSession;
+    String TAG = "LeaderBoard";
 
 
     private View view;
@@ -49,21 +51,22 @@ public class LeaderBoardFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
-
+        Log.d(TAG,"Started");
         FirebaseDatabase.getInstance().getReference("Users")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                         leaderBoardList.clear();
-
+                        Log.d(TAG,"FireBase OnDataChanged");
                         for(DataSnapshot sessionSnapShot: dataSnapshot.getChildren()){
                             User user = sessionSnapShot.getValue(User.class);
+                            user.total = String.valueOf(Long.valueOf(user.getTotal())/60000);
                             if(!user.getAdmin().equals("1"))
                                 leaderBoardList.add(user);
                         }
                         try {
+                            Log.d(TAG,"Try code execution ");
                             Collections.sort(leaderBoardList,User.userTotal);
                             SharedPreferences sharedPreferences = getContext().getSharedPreferences("MaxTotal", Context.MODE_PRIVATE);
                             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -72,6 +75,7 @@ public class LeaderBoardFragment extends Fragment {
                             LeaderBoardList adapter = new LeaderBoardList(getActivity(),leaderBoardList);
                             leaderBoardSession.setAdapter(adapter);
                         }catch (Exception e){
+                            Log.d(TAG,"Error = "+e.getMessage());
                         }
                     }
                     @Override
@@ -79,11 +83,10 @@ public class LeaderBoardFragment extends Fragment {
 
                     }
                 });
-
+        Log.d(TAG,"User Loading Screen");
         User loadingScreen = new User("","Loading...","","","-1","");
         leaderBoardList.add(loadingScreen);
         LeaderBoardList adapter = new LeaderBoardList(getActivity(),leaderBoardList);
         leaderBoardSession.setAdapter(adapter);
-
     }
 }

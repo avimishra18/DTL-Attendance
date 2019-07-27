@@ -36,6 +36,7 @@ public class AttendanceJobScheduler extends JobService {
 
     private static final String targetBSSID = "02:15:b2:00:01:00";
     private static final String targetBSSIDDTL = "f8:1a:67:97:a5:8e";
+    private static int flag = 0;
 
     //FireBase
     DatabaseReference databaseReferenceSession,databaseReferenceUser;
@@ -44,7 +45,6 @@ public class AttendanceJobScheduler extends JobService {
     @Override
     public boolean onStartJob(JobParameters params) {
         Log.d(TAG, "Job Started");
-
         WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
         wifiScan();
         if (!wifiManager.isWifiEnabled()) {
@@ -171,6 +171,7 @@ public class AttendanceJobScheduler extends JobService {
 
     public void startMarkingAttendance(JobParameters params){
 
+        Log.d(TAG,"Started marking attendance.");
         //We shouldn't run a service on the main thread.
         new Thread(new Runnable() {
             @Override
@@ -209,7 +210,7 @@ public class AttendanceJobScheduler extends JobService {
                 SharedPreferences preferencesSession = getSharedPreferences("Sessions", MODE_PRIVATE);
                 SharedPreferences.Editor editorSession = preferencesSession.edit();
                 String sessionID = preferencesSession.getString("uid",null);
-                String storedSessionStartTime = preferencesSession.getString("start",null);
+                final String storedSessionStartTime = preferencesSession.getString("start",null);
                 Long storedLastTime = preferencesSession.getLong("end",0);
 
                 //If previous session exists
@@ -262,7 +263,7 @@ public class AttendanceJobScheduler extends JobService {
                                                 }
                                             });
 
-                                            int timeSpent = Math.round(total/60000);
+                                            int timeSpent = Math.round((System.currentTimeMillis()-Long.valueOf(storedSessionStartTime))/60000);
                                             //Sending Notification
                                             Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
                                                     .setContentTitle("Active Session")
@@ -272,6 +273,7 @@ public class AttendanceJobScheduler extends JobService {
                                                     .build();
                                             notificationManager.notify(1,notification);
                                             Log.d(TAG,"Notification Sent");
+
 
                                     }
                                     @Override
@@ -285,75 +287,172 @@ public class AttendanceJobScheduler extends JobService {
 
                 //If previous session doesn't exist
                 else{
-
+                    Log.d(TAG,"New session creation.");
                     //Clearing previous Shared Preference
                     editorSession.clear();
                     editorSession.apply();
 
-                    //Generation of new UID for Session
-                    sessionID = databaseReferenceSession.push().getKey();
-                    Log.d(TAG,"Generating "+sessionID);
-
-                    //Shared Preference to get SESSION details
-                    editorSession.putString("uid",sessionID);
-                    editorSession.putString("start",endTime);
-                    editorSession.putLong("end",System.currentTimeMillis());
-                    editorSession.apply();
-
-                    //FireBase Update (End-Time & Total Time) Only
-                    attendanceSession = new AttendanceSession(Long.valueOf(endTime),Long.valueOf(endTime));
-
-                    FirebaseDatabase.getInstance().getReference("Sessions")
-                            .child(storeduid)
+                    //NEW CODE
+                    FirebaseDatabase.getInstance().getReference("External")
                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    for(DataSnapshot sessionSnapShot: dataSnapshot.getChildren()){
+                                        String str = sessionSnapShot.getKey();
+                                        //Log.d(TAG,"EXTERNAL: Class Names = "+str);
+                                        External external = sessionSnapShot.getValue(External.class);
 
-                                    for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
-                                        AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
-                                        total += attendanceSession.getTotalTime();
-                                        editor.putString("total",String.valueOf(total));
-                                        User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
-                                        //Making user Online
-                                        databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if (task.isSuccessful())
-                                                    Log.d(TAG, "FireBase: User Status Update Successful");
+                                        //Run my old code
+                                        if(str.equals(FirebaseAuth.getInstance().getUid()) && external.getStartTime()==0) {
+                                            Log.d(TAG, "EXTERNAL: UID found. But time = 0");
+                                            //Generation of new UID for Session
+                                            String sessionID = databaseReferenceSession.push().getKey();
+                                            Log.d(TAG, "Generating " + sessionID);
+
+                                            //Shared Preference to get SESSION details
+                                            SharedPreferences preferencesSession = getSharedPreferences("Sessions", MODE_PRIVATE);
+                                            SharedPreferences.Editor editorSession = preferencesSession.edit();
+                                            editorSession.putString("uid", sessionID);
+                                            editorSession.putString("start", endTime);
+                                            editorSession.putLong("end", System.currentTimeMillis());
+                                            editorSession.apply();
+
+                                            //FireBase Update (End-Time & Total Time) Only
+                                            AttendanceSession attendanceSession = new AttendanceSession(Long.valueOf(endTime), Long.valueOf(endTime));
+
+                                            //Common FB code for both cases
+                                            if (sessionID != null) {
+
+                                                //Updating the session
+                                                databaseReferenceSession
+                                                        .child(sessionID)
+                                                        .setValue(attendanceSession)
+                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                if (task.isSuccessful())
+                                                                    Log.d(TAG, "FireBase: Session Update Successful");
+                                                            }
+                                                        });
                                             }
-                                        });
 
-                                        //Sending Notification
-                                        Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
-                                                .setContentTitle("Active Session")
-                                                .setContentText("Attendance is getting marked.")
-                                                .setOnlyAlertOnce(true)
-                                                .setSmallIcon(R.drawable.ic_wifi_black_24dp)
-                                                .build();
-                                        notificationManager.notify(1,notification);
-                                        Log.d(TAG,"Notification Sent");
+                                            FirebaseDatabase.getInstance().getReference("Sessions")
+                                                    .child(storeduid)
+                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                                                            for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
+                                                                AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                                                                total += attendanceSession.getTotalTime();
+                                                                editor.putString("total", String.valueOf(total));
+                                                                User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
+                                                                //Making user Online
+                                                                databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                    @Override
+                                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                                        if (task.isSuccessful())
+                                                                            Log.d(TAG, "FireBase: User Status Update Successful");
+                                                                    }
+                                                                });
+
+                                                                //Sending Notification
+                                                                Notification notification = new NotificationCompat.Builder(getApplicationContext(), Channel_ID)
+                                                                        .setContentTitle("Active Session")
+                                                                        .setContentText("Attendance is getting marked.")
+                                                                        .setOnlyAlertOnce(true)
+                                                                        .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                                                                        .build();
+                                                                notificationManager.notify(1, notification);
+                                                                Log.d(TAG, "Notification Sent");
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                            Log.d(TAG, "FireBase: User Status Update Failed.");
+                                                        }
+                                                    });
+                                            break;
+                                        }
+                                        else if(str.equals(FirebaseAuth.getInstance().getUid()) && external.getStartTime()!=0)
+                                        {
+
+                                            Log.d(TAG,"EXTERNAL: UID found");
+                                            //Generation of new UID for Session
+                                            String sessionID = databaseReferenceSession.push().getKey();
+                                            Log.d(TAG,"Generating "+sessionID);
+
+                                            //Shared Preference to get SESSION details
+                                            SharedPreferences preferencesSession = getSharedPreferences("Sessions", MODE_PRIVATE);
+                                            SharedPreferences.Editor editorSession = preferencesSession.edit();
+                                            editorSession.putString("uid",sessionID);
+                                            editorSession.putString("start",String.valueOf(external.getStartTime()));
+                                            editorSession.putLong("end",System.currentTimeMillis());
+                                            editorSession.apply();
+
+                                            //FireBase Update (End-Time & Total Time) Only
+                                            AttendanceSession attendanceSession = new AttendanceSession(external.getStartTime(),Long.valueOf(endTime));
+
+                                            //Common FB code for both cases
+                                            if(sessionID != null) {
+
+                                                //Updating the session
+                                                databaseReferenceSession
+                                                        .child(sessionID)
+                                                        .setValue(attendanceSession)
+                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                if (task.isSuccessful())
+                                                                    Log.d(TAG, "FireBase: Session Update Successful");
+                                                            }
+                                                        });
+                                            }
+
+                                            FirebaseDatabase.getInstance().getReference("Sessions")
+                                                    .child(storeduid)
+                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                                            for (DataSnapshot sessionSnapShot : dataSnapshot.getChildren()) {
+                                                                AttendanceSession attendanceSession = sessionSnapShot.getValue(AttendanceSession.class);
+                                                                total += attendanceSession.getTotalTime();
+                                                                editor.putString("total",String.valueOf(total));
+                                                                User activeUserTotal = new User(storedemail, storedUsername, storedAdmin, "1", String.valueOf(total), storeduid);
+                                                                //Making user Online
+                                                                databaseReferenceUser.setValue(activeUserTotal).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                    @Override
+                                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                                        if (task.isSuccessful())
+                                                                            Log.d(TAG, "FireBase: User Status Update Successful");
+                                                                    }
+                                                                });
+
+                                                                //Sending Notification
+                                                                Notification notification = new NotificationCompat.Builder(getApplicationContext(),Channel_ID)
+                                                                        .setContentTitle("Active Session")
+                                                                        .setContentText("Attendance is getting marked.")
+                                                                        .setOnlyAlertOnce(true)
+                                                                        .setSmallIcon(R.drawable.ic_wifi_black_24dp)
+                                                                        .build();
+                                                                notificationManager.notify(1,notification);
+                                                                Log.d(TAG,"Notification Sent");
+                                                            }
+                                                        }
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                            Log.d(TAG, "FireBase: User Status Update Failed.");
+                                                        }
+                                                    });
+                                            break;
+                                        }
+                                        }
                                     }
-                                }
                                 @Override
                                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                                    Log.d(TAG, "FireBase: User Status Update Failed.");
-                                }
-                            });
-                }
-
-                //Common FB code for both cases
-                if(sessionID != null) {
-
-                    //Updating the session
-                    databaseReferenceSession
-                            .child(sessionID)
-                            .setValue(attendanceSession)
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful())
-                                        Log.d(TAG, "FireBase: Session Update Successful");
+                                    Log.d(TAG,"EXTERNAL: Value event listener failed.");
                                 }
                             });
                 }

@@ -217,6 +217,11 @@ public class HomeFragment extends Fragment {
                                     Log.d(TAG, "FireBase: User Status Update Failed.");
                                 }
                             });
+
+                    //New Code
+                    //If Log Out then external = 0
+                    External newExternal = new External(0);
+                    FirebaseDatabase.getInstance().getReference("External").child(FirebaseAuth.getInstance().getUid()).setValue(newExternal);
                 }
             }
         });
@@ -224,6 +229,10 @@ public class HomeFragment extends Fragment {
         floatingActionButtonLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                //If Log Out then external = 0
+                External newExternal = new External(0);
+                FirebaseDatabase.getInstance().getReference("External").child(FirebaseAuth.getInstance().getUid()).setValue(newExternal);
 
                 if (isMyServiceRunning(AttendanceJobScheduler.class)) {
                     buttonStartSession.setBackgroundResource(R.drawable.wifi_selector);

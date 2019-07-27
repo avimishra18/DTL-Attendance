@@ -127,6 +127,8 @@ public class RegisterActivity extends AppCompatActivity {
                                         }
                                     });
 
+                                External newExternal = new External(0);
+                                FirebaseDatabase.getInstance().getReference("External").child(FirebaseAuth.getInstance().getUid()).setValue(newExternal);
                             }
                             else{
                                 Toast.makeText(RegisterActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
