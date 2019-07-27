@@ -17,6 +17,12 @@ The application allows the indivdiual to:
   <img src="/screenshots/leader_board.png" width="270" height="585"/>
 </p>
 
+The application allows the organization to: 
+* View all the individuals who are present in real time
+* Monitor session of all the individuals
+* View the leaderboard
+
+
 ## Built With
 
 * [PhilJay](https://github.com/PhilJay/MPAndroidChart) - Bar Graph Library
