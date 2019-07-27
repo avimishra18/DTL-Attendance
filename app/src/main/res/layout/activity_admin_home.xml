@@ -82,14 +82,30 @@
         android:layout_height="match_parent">
 
         <TextView
+            android:id="@+id/adminHeaderTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
             android:text="DTL Attendance"
             android:fontFamily="@font/proxima_nova_bold"
             android:textColor="@color/colorWhite"
             android:textSize="20sp"
             android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/buttonAdminRefresh"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/floatingActionButtonLogOut"
+            android:background="@drawable/button_ui_alternative"
+            android:paddingLeft="-10dp"
+            android:paddingRight="-10dp"
+            android:layout_marginRight="20dp"
+            android:text="REFRESH"
+            android:fontFamily="@font/proxima_nova_bold"
+            android:textColor="@color/colorPurple" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButtonLogOut"
@@ -117,7 +133,7 @@
 
         <ListView
             android:id="@+id/listViewAdminLeaderBoard"
-            android:layout_below="@+id/floatingActionButtonLogOut"
+            android:layout_below="@+id/buttonAdminRefresh"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"

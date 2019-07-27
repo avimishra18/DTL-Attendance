@@ -32,7 +32,7 @@ public class AdminHomeActivity extends AppCompatActivity {
     //Declaration UI elements
     FloatingActionButton floatingActionButtonLogOut;
     RelativeLayout relativeLayoutAdminHistory,relativeLayoutAdminLeaderBoard;
-    Button buttonGoBack;
+    Button buttonGoBack,buttonAdminRefresh;
     List<User> leaderBoardList;
     ListView leaderBoardSession;
 
@@ -50,6 +50,7 @@ public class AdminHomeActivity extends AppCompatActivity {
         relativeLayoutAdminHistory = findViewById(R.id.relativeLayoutAdminHistory);
         relativeLayoutAdminLeaderBoard = findViewById(R.id.relativeLayoutAdminLeaderBoard);
         buttonGoBack = findViewById(R.id.buttonGoBack);
+        buttonAdminRefresh = findViewById(R.id.buttonAdminRefresh);
         leaderBoardList = new ArrayList<>();
 
 
@@ -127,11 +128,45 @@ public class AdminHomeActivity extends AppCompatActivity {
                 editor.clear();
                 editor.commit();
 
-
-
                 Intent intent = new Intent(AdminHomeActivity.this,LoginActivity.class);
                 startActivity(intent);
                 finish();
+            }
+        });
+
+        //On click listener for refresh
+        buttonAdminRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //LeaderBoard Display
+                FirebaseDatabase.getInstance().getReference("Users")
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                leaderBoardList.clear();
+
+                                for(DataSnapshot sessionSnapShot: dataSnapshot.getChildren()){
+                                    User user = sessionSnapShot.getValue(User.class);
+                                    if(!user.getAdmin().equals("1"))
+                                        leaderBoardList.add(user);
+                                }
+                                try {
+                                    Collections.sort(leaderBoardList,User.userTotal);
+                                    SharedPreferences sharedPreferences = getSharedPreferences("MaxTotal", Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putInt("max",Integer.valueOf(Collections.min(leaderBoardList,User.userTotal).getTotal()));
+                                    editor.apply();
+                                    LeaderBoardList adapter = new LeaderBoardList(AdminHomeActivity.this,leaderBoardList);
+                                    leaderBoardSession.setAdapter(adapter);
+                                }catch (Exception e){
+                                }
+                            }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
             }
         });
     }
