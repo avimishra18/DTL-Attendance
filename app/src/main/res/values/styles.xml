@@ -1,0 +1,36 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!-- New Custom Defined Style for the app -->
+    <style name="AppTheme.FullScreen">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.ActionBar">
+        <item name="colorControlNormal">@color/colorWhite</item>
+    </style>
+    
+    <style name="custom_fab">
+        <item name="android:background">@color/colorWhite</item>
+        <item name="android:textColor">@color/colorLightPurple</item>
+    </style>
+
+    <style name="navigationFont" >
+        <item name="fontFamily">@font/proxima_nova_bold</item>
+    </style>
+
+    <style name="navigationFontInactive" >
+        <item name="fontFamily">@font/proxima_nova_light</item>
+    </style>
+
+</resources>

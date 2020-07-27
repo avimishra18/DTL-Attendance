@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "845034470624",
+    "firebase_url": "https://dtlattendance-dae3d.firebaseio.com",
+    "project_id": "dtlattendance-dae3d",
+    "storage_bucket": "dtlattendance-dae3d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:845034470624:android:99f396253bb0ab2f",
+        "android_client_info": {
+          "package_name": "com.example.dtlattendance"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "845034470624-gl928j5gfhm9m9d5k3egqgkc0frk7nda.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.dtlattendance",
+            "certificate_hash": "c64e26fabcd147488d77af7a5750f37330356cfc"
+          }
+        },
+        {
+          "client_id": "845034470624-agtq74bq1cq93ec3dhtgbcgdhge139jo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBg2qmsJf87UI0eBe6qL1nq1kFbmVW2Q2E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "845034470624-agtq74bq1cq93ec3dhtgbcgdhge139jo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AdminHomeActivity">
+    tools:context=".Activity.Admin.AdminHomeActivity">
 
     <!-- Relative Layout for the BG -->
     <RelativeLayout
@@ -13,7 +13,7 @@
         android:scaleX="1"
         android:alpha="0.85">
         <!-- Header Toolbar of The NotificationDTL -->
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/bgHeaderHomeFragment"
             android:layout_width="match_parent"
             android:layout_height="220dp"
@@ -168,10 +168,6 @@
             android:text="Back"
             android:fontFamily="monospace"
             android:textColor="@color/colorPurple" />
-
-
-
-
 
     </RelativeLayout>
 

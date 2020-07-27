@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#2FB4FF</color>
+    //Title Bar Color
+    <color name="colorPrimaryDark">#64983cff</color>
+    //Progress Bar Color
+    <color name="colorAccent">#983CFF</color>
+
+    <color name="colorWhite">#ffffff</color>
+    <color name="colorPurple">#983CFF</color>
+    <color name="colorDarkPurple">#512494</color>
+    <color name="colorBlue">#2FB4FF</color>
+    <color name="colorLightPurple">#64983cff</color>
+    <color name="colorLightBlue">#642fb4ff</color>
+
+</resources>

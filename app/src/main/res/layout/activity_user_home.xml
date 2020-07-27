@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UserHomeActivity">
+    tools:context=".Activity.User.UserHomeActivity">
 
     <FrameLayout
         android:id="@+id/frameLayoutUser"
@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/bottomNavigationUser"/>
 
-    <android.support.design.widget.BottomNavigationView
+    <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationUser"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

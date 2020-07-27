@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.dtlattendance">
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <application
+        android:name=".Service.NotificationDTL"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:screenOrientation="portrait"
+        android:supportsRtl="true"
+        android:largeHeap="true"
+        android:theme="@style/AppTheme.FullScreen">
+        <activity android:name=".Activity.Admin.AdminHomeActivity"/>
+        <activity android:name=".Activity.User.UserHomeActivity" />
+        <activity
+            android:name=".Activity.Common.LoginActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".Activity.User.RegisterActivity" />
+        <service android:name=".Service.AttendanceJobScheduler"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
+    </application>
+</manifest>
